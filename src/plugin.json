@@ -1,0 +1,60 @@
+{
+  "type": "app",
+  "name": "CMS Attendance",
+  "id": "ems-attendance",
+  "css": {
+    "dark": "css/dark.css",
+    "light": "css/light.css"
+  },
+  "info": {
+    "description": "EMS Attendance Plugin",
+    "author": {
+      "name": "Synectiks",
+      "url": "https://xformation.com"
+    },
+    "keywords": [
+      "cms",
+      "panel"
+    ],
+    "version": "1.0.6",
+    "updated": "2018-10-12",
+    "logos": {
+      "small": "img/attendance.png",
+      "large": "img/attendance.png"
+    }
+  },
+  "includes": [
+    {
+      "type": "page",
+      "name": "Home",
+      "addToNav": false,
+      "defaultNav": false,
+      "component": "WelcomePage"
+    },
+    {
+      "type": "page",
+      "name": "Attendance",
+      "addToNav": true,
+      "defaultNav": true,
+      "component": "AttendanceOverview"
+    },
+    {
+      "type": "page",
+      "name": "MarkAttendance",
+      "addToNav": true,
+      "defaultNav": false,
+      "component": "MarkAttendance"
+    },
+    {
+      "type": "page",
+      "name": "TeacherAttendance",
+      "addToNav": true,
+      "defaultNav": false,
+      "component": "TeacherAttendance"
+    }
+  ],
+  "dependencies": {
+    "grafanaVersion": "3.x 4.x 5.x",
+    "plugins": []
+  }
+}
