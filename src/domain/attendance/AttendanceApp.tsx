@@ -9,6 +9,7 @@ import { createGraphQLClient } from '../../createGraphQLClient';
 import AttendanceOverview from './AttendanceOverview';
 import MarkAttendance from './MarkAttendance';
 import TeacherAttendance from './TeacherAttendance';
+import TeacherMarkAttendance from './TeacherMarkAttendance';
 
 const graphQLClient = createGraphQLClient();
 
@@ -29,6 +30,10 @@ export default function init() {
             <Route
               path="/plugins/ems-attendance/page/teacherattendance"
               component={TeacherAttendance}
+            />
+              <Route
+              path="/plugins/ems-attendance/page/teachermarkattendance"
+              component={TeacherMarkAttendance}
             />
           </Switch>
         </BrowserRouter>

@@ -158,6 +158,12 @@
   align-items: center;
 }
 
+.tflex {
+  display: flex;
+  justify-content: space-between !important;
+  align-items: center;
+}
+
 .hhflex {
   display: flex;
   justify-content: space-between;

@@ -12,10 +12,7 @@
       "name": "Synectiks",
       "url": "https://xformation.com"
     },
-    "keywords": [
-      "cms",
-      "panel"
-    ],
+    "keywords": ["cms", "panel"],
     "version": "1.0.6",
     "updated": "2018-10-12",
     "logos": {
@@ -33,7 +30,7 @@
     },
     {
       "type": "page",
-      "name": "Attendance",
+      "name": "AdminAttendance",
       "addToNav": true,
       "defaultNav": true,
       "component": "AttendanceOverview"
@@ -41,7 +38,7 @@
     {
       "type": "page",
       "name": "MarkAttendance",
-      "addToNav": true,
+      "addToNav": false,
       "defaultNav": false,
       "component": "MarkAttendance"
     },
@@ -51,6 +48,13 @@
       "addToNav": true,
       "defaultNav": false,
       "component": "TeacherAttendance"
+    },
+    {
+      "type": "page",
+      "name": "TeacherMarkAttendance",
+      "addToNav": false,
+      "defaultNav": false,
+      "component": "TeacherMarkAttendance"
     }
   ],
   "dependencies": {
