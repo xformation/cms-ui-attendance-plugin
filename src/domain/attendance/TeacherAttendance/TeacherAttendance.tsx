@@ -30,7 +30,7 @@ const MarkAttendance = () => (
   <section className="plugin-bg-white">
     <h3 className="bg-heading p-1">
       <i className="fa fa-university stroke-transparent mr-1" aria-hidden="true" />{' '}
-      Teacher - Teacher Attendance
+      Teacher - Mark Attendance
     </h3>
     <div className="p-1">
       <table id="t-attendance">
