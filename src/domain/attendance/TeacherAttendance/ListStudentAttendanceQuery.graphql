@@ -1,0 +1,14 @@
+#import "../../gqlfragments/studentattendance.graphql"
+
+fragment studentAttendanceList on StudentAttendance {
+  ...studentattendance
+}
+
+query studentList {
+  studentAttendances {
+    ...studentAttendanceList
+  }
+}
+
+
+
