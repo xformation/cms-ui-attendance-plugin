@@ -111,7 +111,7 @@
 
 export type DailyStudentAttendanceListQuery = {
   getDailyStudentAttendanceData: Array<{
-    studentId: number;
+    studentId: string;
     studentName: string;
     currentDateStatus: string;
     previousOneDayStatus: string;
@@ -119,6 +119,13 @@ export type DailyStudentAttendanceListQuery = {
     previousThreeDayStatus: string;
     comments: string;
   }>;
+};
+
+export type UpdateStudentAttendanceMutation = {
+  updateStudentAttendanceData: {
+    statusCode: string;
+    statusDesc: string;
+  };
 };
 
 // export type DailyStudentAttendanceDetailsFragment = {

@@ -1,49 +1,31 @@
 import * as React from 'react';
-import DatePicker from 'react-datepicker';
+// import DatePicker from 'react-datepicker';
 import * as moment from 'moment';
 import { AttendanceServices } from '../_services';
 import * as StudentAttendanceFilterQueryGql from './StudentAttendanceFilterQuery.graphql';
+import * as StudentAttendanceUpdateMutationGql from './StudentAttendanceUpdateMutation.graphql';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import { graphql, MutationFunc } from "react-apollo";
+import { graphql, MutationFunc, compose } from "react-apollo";
 import {
-  // StudentAttendanceListQuery,
+ 
+  ReactFunctionOrComponentClass,
   DailyStudentAttendanceListQuery,
-  // StudentAttendanceFilterInput,
-  // StudentAttendanceFragment,
-  // StudentAttendanceData,
+  UpdateStudentAttendanceMutation
+ 
 } from '../../types';
-// import withLoadingHandler from '../../../components/withLoadingHandler';
-// import { strict } from 'assert';
+import { any } from 'async';
+
 
 type StudentAttendanceListPageOwnProps = RouteComponentProps<{}>;
+
+
 type StudentAttendanceListPageProps = StudentAttendanceListPageOwnProps & {
   // studentDataListQry: QueryProps & StudentAttendanceListQuery;
   mutate: MutationFunc<DailyStudentAttendanceListQuery>;
+  mutateUpd: MutationFunc<UpdateStudentAttendanceMutation>;
 };
 
-// interface type {
-//   checked: boolean;
-// }
 
-class DatePickerComponent extends React.Component<any, any> {
-  constructor(props: any) {
-    super(props);
-    this.state = {
-      startDate: moment(),
-    };
-    this.handleChange = this.handleChange.bind(this);
-  }
-
-  handleChange(date: any) {
-    this.setState({
-      startDate: date,
-    });
-  }
-
-  render() {
-    return <DatePicker id="dtPicker" value={this.state.startDate} disabled selected={this.state.startDate} onChange={this.handleChange} />;
-  }
-}
 
 type StudentFilterCriteria = {
   studentFilterData: any,
@@ -62,8 +44,9 @@ type StudentFilterCriteria = {
   submitted: any
 };
 
+
+
 class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, StudentFilterCriteria>{
-  
   constructor(props: any) {
     super(props);
     this.state = {
@@ -95,15 +78,14 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
             lecture: {
                 id: ""
             },
-            dtPicker: {
-                dt: DatePickerComponent
-            },
             teach: {
                 id: ""
             },
             attendanceMaster: {
                 id: ""
-            }
+            },
+            mutateResult: [],
+            selectedIds: "",
         },
         branches: [],
         academicYears: [],
@@ -118,6 +100,7 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
         teaches: [],
         attendanceMasters: [],
         submitted: false
+        
     };
     this.createDepartments = this.createDepartments.bind(this);
     this.createBatches = this.createBatches.bind(this);
@@ -125,6 +108,7 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
     this.createSubjects = this.createSubjects.bind(this);
     this.createSections = this.createSections.bind(this);
     this.createLectures = this.createLectures.bind(this);
+    
   }
 
   componentDidMount() {
@@ -138,6 +122,7 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
             let lectures = data[5];
             let teaches = data[6];
             let attendanceMasters = data[7];
+           
             this.setState({
                 departments,
                 batches,
@@ -147,6 +132,7 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
                 lectures,
                 teaches,
                 attendanceMasters
+                
             });
         },
         error => {
@@ -258,67 +244,92 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
     return lecturesOptions;
   }
 
-  isCorrectDate(strDate: any){
-    var regex = /^(((0[1-9]|[12]\d|3[01])\/(0[13578]|1[02])\/((19|[2-9]\d)\d{2}))|((0[1-9]|[12]\d|30)\/(0[13456789]|1[012])\/((19|[2-9]\d)\d{2}))|((0[1-9]|1\d|2[0-8])\/02\/((19|[2-9]\d)\d{2}))|(29\/02\/((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))))$/g;
-    return regex.test(strDate) ? true : false;
-  }
+  // isCorrectDate(strDate: any){
+  //   var regex = /^(((0[1-9]|[12]\d|3[01])\/(0[13578]|1[02])\/((19|[2-9]\d)\d{2}))|((0[1-9]|[12]\d|30)\/(0[13456789]|1[012])\/((19|[2-9]\d)\d{2}))|((0[1-9]|1\d|2[0-8])\/02\/((19|[2-9]\d)\d{2}))|(29\/02\/((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))))$/g;
+  //   return regex.test(strDate) ? true : false;
+  // }
 
   onFormSubmit = (e: any) => {
     this.setState({
         submitted: true
     });
-    // const { studentDataListQry } = this.props;
+    
     const { mutate } = this.props;
     const { studentFilterData } = this.state;
     e.preventDefault();
-    if (studentFilterData.branch.id && studentFilterData.department.id &&  studentFilterData.batch.id && studentFilterData.section.id && studentFilterData.lecture.id) {
-      // var todayTime = new Date();
-      // var month = todayTime.getMonth() + 1;
-      // var ms = month < 10 ? "0"+month : month;
-      // var day = todayTime.getDate();
-      // var year = todayTime.getFullYear();
-      // var dd =  year+"-"+ms+"-"+day; 
-      // var dp = new DatePickerComponent(dd);
-
-      let dtP = e.target.querySelector("#dtPicker");
-      // if(this.isCorrectDate(dtP.value) === false){
-      //   dtP = moment(new Date()).format("DD-MM-YYYY");
-      // }
-      // console.log("date picker selected values : ", dtP.value);
-      // console.log("moment date : ",   moment(new Date(dtP.value)).format("DD-MM-YYYY"));
-        let studentFilterInputData = {
-            branchId: studentFilterData.branch.id,
-            departmentId: studentFilterData.department.id,
-            batchId: studentFilterData.batch.id,
-            sectionId: studentFilterData.section.id,
-            subjectId: studentFilterData.subject.id,
-            attendanceDate: dtP.value,
-            lectureId: studentFilterData.lecture.id
-        };
+    
+    // if(btn.id === 'btnTakeAtnd'){
+      if (studentFilterData.branch.id && studentFilterData.department.id &&  studentFilterData.batch.id && studentFilterData.section.id && studentFilterData.lecture.id) {
+      
+        e.target.querySelector("#department").setAttribute("disabled", true);
+        e.target.querySelector("#batch").setAttribute("disabled", true);
+        e.target.querySelector("#semester").setAttribute("disabled", true);
+        e.target.querySelector("#subject").setAttribute("disabled", true);
+        e.target.querySelector("#section").setAttribute("disabled", true);
+        e.target.querySelector("#lecture").setAttribute("disabled", true);
+        e.target.querySelector("#lecture").setAttribute("disabled", true);
+        e.target.querySelector("#detailGrid").setAttribute("class", "tflex bg-heading mt-1");
+        e.target.querySelector("#detailGridTable").removeAttribute("class");
         
-        // delete dplStudentData.branch;
-        // delete dplStudentData.department;
-        // delete dplStudentData.batch;
-        // delete dplStudentData.section;
-        // delete dplStudentData.__typename;
-        let btn = e.target.querySelector("button[type='submit']");
-        // btn.setAttribute("disabled", true);
-        // let dataSavedMessage: any = document.querySelector(".data-saved-message");
-        // dataSavedMessage.style.display = "none";
-        return mutate({
-            variables: { filter: studentFilterInputData },
-        }).then((data: any) => {
-          console.log('Query Result ', data);
-            // btn.removeAttribute("disabled");
-            // dataSavedMessage.style.display = "inline-block";
-            // location.href = `${location.origin}/plugins/ems-student/page/students`;
-        }).catch((error: any) => {
-            // btn.removeAttribute("disabled");
-            // dataSavedMessage.style.display = "inline-block";
-            console.log('there was an error sending the query result', error);
-            return Promise.reject(`Could not retrieve student attendance data: ${error}`);
-        });
-    }
+        // var todayTime = new Date();
+        // var month = todayTime.getMonth() + 1;
+        // var ms = month < 10 ? "0"+month : month;
+        // var day = todayTime.getDate();
+        // var year = todayTime.getFullYear();
+        // var dd =  year+"-"+ms+"-"+day; 
+        // var dp = new DatePickerComponent(dd);
+  
+        // let dtP = moment(new Date()).format("DD-MM-YYYY");
+        //e.target.querySelector("#dtPicker");
+        // if(this.isCorrectDate(dtP.value) === false){
+        //   dtP = moment(new Date()).format("DD-MM-YYYY");
+        // }
+        // console.log("date picker selected values : ", dtP.value);
+        // console.log("moment date : ",   moment(new Date(dtP.value)).format("DD-MM-YYYY"));
+          let studentFilterInputData = {
+              branchId: studentFilterData.branch.id,
+              departmentId: studentFilterData.department.id,
+              batchId: studentFilterData.batch.id,
+              sectionId: studentFilterData.section.id,
+              subjectId: studentFilterData.subject.id,
+              attendanceDate: moment(new Date()).format("DD-MM-YYYY"),
+              lectureId: studentFilterData.lecture.id,
+              teacherId: studentFilterData.teacher.id,
+              academicYearId: studentFilterData.academicYear.id
+          };
+          
+          // delete dplStudentData.branch;
+          // delete dplStudentData.department;
+          // delete dplStudentData.batch;
+          // delete dplStudentData.section;
+          // delete dplStudentData.__typename;
+          let btn = e.target.querySelector("button[type='submit']");
+          // btn.setAttribute("disabled", true);
+          // let dataSavedMessage: any = document.querySelector(".data-saved-message");
+          // dataSavedMessage.style.display = "none";
+          return mutate({
+              variables: { filter: studentFilterInputData },
+          }).then(data => {
+            const sdt = data;
+            studentFilterData.mutateResult.push(sdt);
+            this.setState({
+              studentFilterData: studentFilterData
+            });
+            console.log('Query Result ::::: ',studentFilterData.mutateResult);
+            
+              // btn.removeAttribute("disabled");
+              // dataSavedMessage.style.display = "inline-block";
+              // location.href = `${location.origin}/plugins/ems-attendance/page/teacherattendance/${data}`;
+          }).catch((error: any) => {
+              // btn.removeAttribute("disabled");
+              // dataSavedMessage.style.display = "inline-block";
+              console.log('there was an error sending the query result', error);
+              return Promise.reject(`Could not retrieve student attendance data: ${error}`);
+          });
+      }
+    // }
+
+    
 }
 
   onChange = (e: any) => {
@@ -397,9 +408,58 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
 
   }
 
+  onClick = (e: any) => {
+    const { mutate, mutateUpd } = this.props;
+    const { studentFilterData } = this.state;
+    e.preventDefault();
+    studentFilterData.selectedIds = "";
+    let els  = document.querySelectorAll("input[type=checkbox]");
+    const delim = "#~#";
+    const delimline = "##delimline##";
+    var empty = [].filter.call( els, function( el: any ) {
+      let txt : any = document.querySelector("#t"+el.id);
+      if(el.checked){
+        const eid = ""+ el.id+delim+"checked"+delim
+        var txtData = ""; 
+        if(txt != null){
+            txtData = txt.value;
+        }
+        studentFilterData.selectedIds = studentFilterData.selectedIds + eid+txtData+delimline;
+      }else{
+        const eid = ""+ el.id+delim+"unchecked"+delim
+        var txtData = ""; 
+        if(txt != null){
+            txtData = txt.value;
+        }
+        studentFilterData.selectedIds = studentFilterData.selectedIds + eid+txtData+delimline;
+      }
+    });
+    console.log('total IDS : ',studentFilterData.selectedIds);    
+    
+    let studentAttendanceUpdateFilter = {
+      studentIds: studentFilterData.selectedIds,
+      lectureId: studentFilterData.lecture.id
+    };
+    return mutateUpd({
+      variables: { filter: studentAttendanceUpdateFilter },
+    }).then(data => {
+      const sdt = data;
+      // studentFilterData.mutateResult.push(sdt);
+      // this.setState({
+      //   studentFilterData: studentFilterData
+      // });
+      console.log('Update status ::::: ',sdt);
+    }).catch((error: any) => {
+        console.log('there was an error sending the query result', error);
+        return Promise.reject(`Could not retrieve student attendance data: ${error}`);
+    });
+
+  }
+
   render() {
-    const { history, match, mutate } = this.props;
+    const { mutate, mutateUpd } = this.props;
     const { studentFilterData, departments, batches, semesters, subjects, sections, lectures, teaches, attendanceMasters, submitted } = this.state;
+    
     return (
       <section className="plugin-bg-white">
         <h3 className="bg-heading p-1">
@@ -422,58 +482,218 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
               <tbody>
                 <tr>
                   <td>
-                    <select name="department" onChange={this.onChange} value={studentFilterData.department.id} className="gf-form-input max-width-22">
+                    <select required name="department" id="department" onChange={this.onChange} value={studentFilterData.department.id} className="gf-form-input max-width-22">
                         {this.createDepartments(departments, studentFilterData.branch.id, studentFilterData.academicYear.id)}
                     </select>
                   </td>
                   <td>
-                    <select name="batch" onChange={this.onChange} value={studentFilterData.batch.id} className="gf-form-input max-width-22">
+                    <select required name="batch" id="batch" onChange={this.onChange} value={studentFilterData.batch.id} className="gf-form-input max-width-22">
                         {this.createBatches(batches, studentFilterData.department.id)}
                     </select>
                   </td>
                   <td>
-                    <select name="semester" onChange={this.onChange} value={studentFilterData.semester.id} className="gf-form-input max-width-22">
+                    <select required name="semester" id="semester" onChange={this.onChange} value={studentFilterData.semester.id} className="gf-form-input max-width-22">
                         {this.createSemesters(semesters)}
                     </select>
                   </td>
                   <td>
-                    <select name="subject" onChange={this.onChange} value={studentFilterData.subject.id} className="gf-form-input max-width-22">
+                    <select required name="subject" id="subject" onChange={this.onChange} value={studentFilterData.subject.id} className="gf-form-input max-width-22">
                         {this.createSubjects(subjects, studentFilterData.department.id, studentFilterData.batch.id, studentFilterData.teacher.id)}
                     </select>
                   </td>
                   <td>
-                    <select name="section" onChange={this.onChange} value={studentFilterData.section.id} className="gf-form-input max-width-22">
+                    <select required name="section" id="section" onChange={this.onChange} value={studentFilterData.section.id} className="gf-form-input max-width-22">
                         {this.createSections(sections, studentFilterData.batch.id)}
                     </select>
                   </td>
                   <td>
-                    <select name="lecture" onChange={this.onChange} value={studentFilterData.lecture.id} className="gf-form-input max-width-22">
+                    <select required name="lecture" id="lecture" onChange={this.onChange} value={studentFilterData.lecture.id} className="gf-form-input max-width-22">
                         {this.createLectures(lectures, teaches, attendanceMasters, studentFilterData.subject.id, studentFilterData.teacher.id, studentFilterData.batch.id, studentFilterData.section.id)}
                     </select>
                   </td>
                   <td>
-                    <DatePickerComponent disabled />
+                      <input type="text" value={moment(new Date()).format("DD-MM-YYYY")} disabled ></input>
                   </td>
                   <td>
-                    <button className="btn bs" type="submit">Take Attendance</button>
-                    <a href="/plugins/ems-attendance/page/teachermarkattendance" className="btn btn-primary">
-                      Take Attendance
-                    </a>
+                    <button className="btn btn-primary" type="submit" id="btnTakeAtnd" name="btnTakeAtnd" >Take Attendance</button>
+                   
                   </td>
                 </tr>
               </tbody>
             </table>
+
+            <div className="hide" id="detailGrid">
+              <h4 className="p-1 py-2 mb-0">Mark Attendance</h4>
+              <div className="hhflex">
+                <div className="mx-2">
+                  <select className="ma-select">
+                    <option value="">Sort By</option>
+                    <option value="">Name</option>
+                    <option value="">ID</option>
+                  </select>
+                </div>
+                <div className="h-center ma-select">
+                  <input type="text" placeholder="Search Student" className="ma-select" />
+                  <i className="fa fa-search" aria-hidden="true" />
+                </div>
+              </div>
+            </div>
+
+            <div className="hide" id="detailGridTable">
+                <table className="fwidth"  id="matable">
+                  <thead >
+                    <tr>
+                      <th>Student Id</th>
+                      <th>Student Name</th>
+                      <th>Today</th>
+                      <th>{moment(new Date()).subtract(1, "days").format("DD-MM-YYYY")}</th>
+                      <th>{moment(new Date()).subtract(2, "days").format("DD-MM-YYYY")}</th>
+                      <th>{moment(new Date()).subtract(3, "days").format("DD-MM-YYYY")}</th>
+                      <th>Comments</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                      {
+                          this.state.studentFilterData.mutateResult.map((pd: any) => (
+                            pd.data.getDailyStudentAttendanceData.map((k: any) => (
+                                <tr>
+                                  <td>{k.studentId}</td>
+                                  <td>{k.studentName}</td>
+                                  <td>
+                                      { k.currentDateStatus === 'PRESENT' && 
+                                        (
+                                          <label className="switch">
+                                          {' '}
+                                          <input type="checkbox" id={k.studentId} name={k.studentId} defaultChecked /> <span className="slider" />{' '}
+                                        </label>
+                                        )
+                                      }
+                                      { k.currentDateStatus === 'ABSENT' && 
+                                        (
+                                          <label className="switch">
+                                          {' '}
+                                          <input type="checkbox" id={k.studentId} name={k.studentId} /> <span className="slider" />{' '}
+                                        </label>
+                                        )
+                                      }
+                                      { k.currentDateStatus === 'LECTURE_NOT_SCHEDULED' && 
+                                        (
+                                          <label >N/A</label>
+                                        )
+                                      }
+                                  </td>
+                                  <td>
+                                    { k.previousOneDayStatus === 'PRESENT' && 
+                                        (
+                                          <span className="check-square">
+                                            <i className="fa fa-check" aria-hidden="true" />
+                                          </span>
+                                        )
+                                      }
+                                      { k.previousOneDayStatus === 'ABSENT' && 
+                                        (
+                                          <span className="check-square-red">
+                                            <i className="fa fa-times" aria-hidden="true" />
+                                          </span>
+                                        )
+                                      }
+                                      { k.previousOneDayStatus === 'LECTURE_NOT_SCHEDULED' && 
+                                        (
+                                          <label >N/A</label>
+                                        )
+                                      }
+                                  </td>
+                                  <td>
+                                      { k.previousTwoDayStatus === 'PRESENT' && 
+                                        (
+                                          <span className="check-square">
+                                            <i className="fa fa-check" aria-hidden="true" />
+                                          </span>
+                                        )
+                                      }
+                                      { k.previousTwoDayStatus === 'ABSENT' && 
+                                        (
+                                          <span className="check-square-red">
+                                            <i className="fa fa-times" aria-hidden="true" />
+                                          </span>
+                                        )
+                                      }
+                                      { k.previousTwoDayStatus === 'LECTURE_NOT_SCHEDULED' && 
+                                        (
+                                          <label >N/A</label>
+                                        )
+                                      }
+                                  </td>
+                                  <td>
+                                      { k.previousThreeDayStatus === 'PRESENT' && 
+                                        (
+                                          <span className="check-square">
+                                            <i className="fa fa-check" aria-hidden="true" />
+                                          </span>
+                                        )
+                                      }
+                                      { k.previousThreeDayStatus === 'ABSENT' && 
+                                        (
+                                          <span className="check-square-red">
+                                            <i className="fa fa-times" aria-hidden="true" />
+                                          </span>
+                                        )
+                                      }
+                                      { k.previousThreeDayStatus === 'LECTURE_NOT_SCHEDULED' && 
+                                        (
+                                          <label >N/A</label>
+                                        )
+                                      }
+                                  </td>
+                                  <td >
+                                      <input type="text" id={"t"+k.studentId} value={k.comments} ></input>
+                                  </td>
+                                </tr>
+                            ))
+                          ))
+                      }
+                  </tbody>
+                </table>
+
+                <div className="d-flex fwidth justify-content-between pt-2">
+                  <div>
+                   <button className="btn btn-primary mr-1" id="btnSave" name="btnSave" onClick={this.onClick}>Save</button>
+                  </div>
+                </div>
+
+            </div>
+
           </form>
         </div>
+
+
+        
     </section>
+
+      
+    
     );
   }
 }
   
 
 // export default TeacherAttendance;
+// export default withRouter(
+//   graphql<DailyStudentAttendanceListQuery, StudentAttendanceListPageOwnProps>(StudentAttendanceFilterQueryGql) (
+//     TeacherAttendance
+//   )
+// );
+
+
 export default withRouter(
-  graphql<DailyStudentAttendanceListQuery, StudentAttendanceListPageOwnProps>(StudentAttendanceFilterQueryGql)(
-    TeacherAttendance
+  compose(
+    graphql<DailyStudentAttendanceListQuery, StudentAttendanceListPageOwnProps>(StudentAttendanceFilterQueryGql, {
+      name: "mutate"
+    })
+    // ,
+    // graphql<UpdateStudentAttendanceMutation, StudentAttendanceListPageOwnProps>(StudentAttendanceUpdateMutationGql, {
+    //   name: "mutateUpd"
+    // })
   )
+  (TeacherAttendance)
 );
