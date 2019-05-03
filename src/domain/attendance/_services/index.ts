@@ -11,7 +11,7 @@ export const AttendanceServices = {
   getAttendanceMasters,
 };
 
-const url = 'http://localhost:8080/api/'; //18.234.66.133
+const url = 'http://18.234.66.133:8080/api/'; //18.234.66.133
 
 function getRequestOptions(method: any) {
   let requestOptions = {
