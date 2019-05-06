@@ -9,6 +9,7 @@ export const AttendanceServices = {
   getLectures,
   getTeaches,
   getAttendanceMasters,
+  updateStudentAttendance,
 };
 
 const url = 'http://localhost:8080/api/'; //18.234.66.133
@@ -19,6 +20,17 @@ function getRequestOptions(method: any) {
     headers: {
       'Content-Type': 'application/json',
     },
+  };
+  return requestOptions;
+}
+
+function putRequestOptions(method: any, payLoad: any) {
+  let requestOptions = {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payLoad),
   };
   return requestOptions;
 }
@@ -71,6 +83,13 @@ function getTeaches() {
 function getAttendanceMasters() {
   let requestOptions = getRequestOptions('GET');
   return fetch(`${url}cmsattendance-masters`, requestOptions).then(response =>
+    response.json()
+  );
+}
+
+function updateStudentAttendance(payLoad: any) {
+  let requestOptions = putRequestOptions('PUT', payLoad);
+  return fetch(`${url}cmsstudent-attendances`, requestOptions).then(response =>
     response.json()
   );
 }

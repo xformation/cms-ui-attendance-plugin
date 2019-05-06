@@ -4,24 +4,25 @@ import * as moment from 'moment';
 import { AttendanceServices } from '../_services';
 import * as StudentAttendanceFilterQueryGql from './StudentAttendanceFilterQuery.graphql';
 import * as StudentAttendanceUpdateMutationGql from './StudentAttendanceUpdateMutation.graphql';
-import { withRouter, RouteComponentProps } from 'react-router-dom';
+import UpdateStudentAttendance from "./UpdateStudentAttendance";
+import { withRouter, RouteComponentProps } from 'react-router';
 import { graphql, MutationFunc, compose } from "react-apollo";
 import {
- 
   ReactFunctionOrComponentClass,
   DailyStudentAttendanceListQuery,
   UpdateStudentAttendanceMutation
- 
 } from '../../types';
-import { any } from 'async';
+// import { any } from 'async';
+// import withLoadingHandler from '../../../components/withLoadingHandler';
+// import { strict } from 'assert';
 
+type StudentAttendanceRootProps = RouteComponentProps<{}, {}, any>;
 
-type StudentAttendanceListPageOwnProps = RouteComponentProps<{}>;
-
-
-type StudentAttendanceListPageProps = StudentAttendanceListPageOwnProps & {
-  // studentDataListQry: QueryProps & StudentAttendanceListQuery;
+type StudentAttendancePageProps = StudentAttendanceRootProps & {
   mutate: MutationFunc<DailyStudentAttendanceListQuery>;
+};
+
+type StudentAttendanceUpdatePageProps = StudentAttendanceRootProps & {
   mutateUpd: MutationFunc<UpdateStudentAttendanceMutation>;
 };
 
@@ -44,10 +45,17 @@ type StudentFilterCriteria = {
   submitted: any
 };
 
+class SaData {
+  studentIds: any;
+  lectureId: any;
+  constructor(studentIds: any, lectureId: any) {
+    this.studentIds = studentIds;
+    this.lectureId = lectureId;
+  }
+}
 
-
-class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, StudentFilterCriteria>{
-  constructor(props: any) {
+class TeacherAttendance extends React.Component<StudentAttendancePageProps, StudentFilterCriteria>{
+  constructor(props: any, a: any) {
     super(props);
     this.state = {
       studentFilterData: {
@@ -86,6 +94,8 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
             },
             mutateResult: [],
             selectedIds: "",
+            payLoad: [],
+            textValueMap: {}
         },
         branches: [],
         academicYears: [],
@@ -100,6 +110,7 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
         teaches: [],
         attendanceMasters: [],
         submitted: false
+        
         
     };
     this.createDepartments = this.createDepartments.bind(this);
@@ -409,55 +420,73 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
   }
 
   onClick = (e: any) => {
-    const { mutate, mutateUpd } = this.props;
+    // const { mutateUpd } = this.props;
+    // const { mutate } = this.props;
     const { studentFilterData } = this.state;
+    
     e.preventDefault();
     studentFilterData.selectedIds = "";
     let els  = document.querySelectorAll("input[type=checkbox]");
     const delim = "#~#";
-    const delimline = "##delimline##";
     var empty = [].filter.call( els, function( el: any ) {
       let txt : any = document.querySelector("#t"+el.id);
+      let txtIds: any;
       if(el.checked){
-        const eid = ""+ el.id+delim+"checked"+delim
+        const eid = ""+ el.id+delim+"PRESENT"+delim
         var txtData = ""; 
         if(txt != null){
-            txtData = txt.value;
+            var tmp  = studentFilterData.textValueMap["t"+el.id];
+            if(tmp === undefined){
+              txtData = txt.value;
+            }else{
+              txtData = tmp; 
+            }
         }
-        studentFilterData.selectedIds = studentFilterData.selectedIds + eid+txtData+delimline;
+        
+        txtIds = eid+txtData;
+        let sadt = new SaData(txtIds, studentFilterData.lecture.id);
+        studentFilterData.payLoad.push(sadt);
       }else{
-        const eid = ""+ el.id+delim+"unchecked"+delim
+        const eid = ""+ el.id+delim+"ABSENT"+delim
         var txtData = ""; 
         if(txt != null){
-            txtData = txt.value;
+            var tmp  = studentFilterData.textValueMap["t"+el.id];
+            if(tmp === undefined){
+              txtData = txt.value;
+            }else{
+              txtData = tmp; 
+            }
         }
-        studentFilterData.selectedIds = studentFilterData.selectedIds + eid+txtData+delimline;
+        
+        txtIds = eid+txtData;
+        let sadt = new SaData(txtIds, studentFilterData.lecture.id);
+        studentFilterData.payLoad.push(sadt);
       }
+      
     });
     console.log('total IDS : ',studentFilterData.selectedIds);    
+    AttendanceServices.updateStudentAttendance(studentFilterData.payLoad).then(response => 
+      alert(response.statusDesc)
+      );
     
-    let studentAttendanceUpdateFilter = {
-      studentIds: studentFilterData.selectedIds,
-      lectureId: studentFilterData.lecture.id
-    };
-    return mutateUpd({
-      variables: { filter: studentAttendanceUpdateFilter },
-    }).then(data => {
-      const sdt = data;
-      // studentFilterData.mutateResult.push(sdt);
-      // this.setState({
-      //   studentFilterData: studentFilterData
-      // });
-      console.log('Update status ::::: ',sdt);
-    }).catch((error: any) => {
-        console.log('there was an error sending the query result', error);
-        return Promise.reject(`Could not retrieve student attendance data: ${error}`);
-    });
+  }
 
+  handleChange= (e: any) => {
+    const { id, value} = e.nativeEvent.target;
+    const { studentFilterData } = this.state;
+    const key  = id;
+    const val  = value;
+    e.preventDefault();
+    studentFilterData.textValueMap[key] = val;
+    this.setState({
+      studentFilterData: studentFilterData
+    });
+ 
   }
 
   render() {
-    const { mutate, mutateUpd } = this.props;
+    // const { mutate, mutateUpd } = this.props;
+    // const { mutate } = this.props;
     const { studentFilterData, departments, batches, semesters, subjects, sections, lectures, teaches, attendanceMasters, submitted } = this.state;
     
     return (
@@ -525,6 +554,7 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
             <div className="hide" id="detailGrid">
               <h4 className="p-1 py-2 mb-0">Mark Attendance</h4>
               <div className="hhflex">
+                
                 <div className="mx-2">
                   <select className="ma-select">
                     <option value="">Sort By</option>
@@ -646,7 +676,7 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
                                       }
                                   </td>
                                   <td >
-                                      <input type="text" id={"t"+k.studentId} value={k.comments} ></input>
+                                      <input type="text" id={"t"+k.studentId} defaultValue={k.comments} maxLength={255} onChange={this.handleChange} ></input>
                                   </td>
                                 </tr>
                             ))
@@ -656,10 +686,13 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
                 </table>
 
                 <div className="d-flex fwidth justify-content-between pt-2">
+                  <p></p>
                   <div>
-                   <button className="btn btn-primary mr-1" id="btnSave" name="btnSave" onClick={this.onClick}>Save</button>
+                    
+                    <button className="btn btn-primary mr-1" id="btnSave" name="btnSave" onClick={this.onClick}>Save</button>
+                    
                   </div>
-                </div>
+              </div>
 
             </div>
 
@@ -684,16 +717,16 @@ class TeacherAttendance extends React.Component<StudentAttendanceListPageProps, 
 //   )
 // );
 
-
 export default withRouter(
   compose(
-    graphql<DailyStudentAttendanceListQuery, StudentAttendanceListPageOwnProps>(StudentAttendanceFilterQueryGql, {
+    
+    graphql<DailyStudentAttendanceListQuery, StudentAttendanceRootProps>(StudentAttendanceFilterQueryGql, {
       name: "mutate"
     })
     // ,
-    // graphql<UpdateStudentAttendanceMutation, StudentAttendanceListPageOwnProps>(StudentAttendanceUpdateMutationGql, {
+    // graphql<UpdateStudentAttendanceMutation, StudentAttendanceRootProps>(StudentAttendanceUpdateMutationGql, {
     //   name: "mutateUpd"
     // })
   )
   (TeacherAttendance)
-);
+);  
