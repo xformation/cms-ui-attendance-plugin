@@ -1,7 +1,10 @@
 export const AttendanceServices = {
   getDepartments,
+  getDepartmentsByBranchId,
   getYears,
+  getYearsByDepartmentId,
   getSubjects,
+  getSubjectsByDepartmentAndBatchId,
   getBranches,
   getSections,
   getTypes,
@@ -12,7 +15,7 @@ export const AttendanceServices = {
   updateStudentAttendance,
 };
 
-const url = 'http://18.234.66.133:8080/api/'; //18.234.66.133
+const url = 'http://18.234.66.133:8080/api/';
 
 function getRequestOptions(method: any) {
   let requestOptions = {
@@ -40,14 +43,32 @@ function getDepartments() {
   return fetch(`${url}cmsdepartments`, requestOptions).then(response => response.json());
 }
 
+function getDepartmentsByBranchId(specificApi: any) {
+  let requestOptions = getRequestOptions('GET');
+  return fetch(`${url}` + specificApi, requestOptions).then(response => response.json());
+}
+
 function getYears() {
   let requestOptions = getRequestOptions('GET');
   return fetch(`${url}cmsbatches`, requestOptions).then(response => response.json());
 }
 
+function getYearsByDepartmentId(specificApi: any) {
+  let requestOptions = getRequestOptions('GET');
+  return fetch(`${url}` + specificApi, requestOptions).then(response => response.json());
+}
+
 function getSubjects() {
   let requestOptions = getRequestOptions('GET');
   return fetch(`${url}cmssubjects`, requestOptions).then(response => response.json());
+}
+
+function getSubjectsByDepartmentAndBatchId(deptId: any, batchId: any) {
+  let requestOptions = getRequestOptions('GET');
+  return fetch(
+    `${url}cmssubjects-bydepartment-batchid?departmentId=${deptId}&batchId=${batchId}`,
+    requestOptions
+  ).then(response => response.json());
 }
 
 function getBranches() {

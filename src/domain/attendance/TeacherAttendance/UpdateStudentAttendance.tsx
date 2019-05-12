@@ -9,8 +9,20 @@ import { graphql, MutationFunc, compose } from "react-apollo";
 import {ReactFunctionOrComponentClass, UpdateStudentAttendanceMutation} from '../../types';
 import withLoadingHandler from '../../../components/withLoadingHandler';
 
-// type updateStudentAttendanceRootProps = RouteComponentProps<{}>;
-  
+type updateStudentAttendanceRootProps = RouteComponentProps<{}>;
+
+type TargetComponentProps = {
+    mutateUpd: MutationFunc<UpdateStudentAttendanceMutation> & UpdateStudentAttendanceMutation;
+};
+
+const UpdateStudentAttendance = (TargetComponent: ReactFunctionOrComponentClass<TargetComponentProps>) => {
+    return graphql<UpdateStudentAttendanceMutation, updateStudentAttendanceRootProps, TargetComponentProps>(StudentAttendanceUpdateMutationGql)(
+    //   withLoadingHandler(TargetComponent)
+    (TargetComponent)
+    );
+};
+
+export default UpdateStudentAttendance;
 // type StudentAttendancePageProps = updateStudentAttendanceRootProps & {
 //   mutateUpd: MutationFunc<UpdateStudentAttendanceMutation>;
 // };
@@ -25,12 +37,12 @@ import withLoadingHandler from '../../../components/withLoadingHandler';
 // //   )
 // };
 
-interface dummyprop {
-    name: string;
-}
-class DummyComponent extends React.Component<dummyprop>{
-    render(){
-        return (<div>this.props.name</div>);
-    }
-}
-export default DummyComponent;
+// interface dummyprop {
+//     name: string;
+// }
+// class DummyComponent extends React.Component<dummyprop>{
+//     render(){
+//         return (<div>this.props.name</div>);
+//     }
+// }
+// export default DummyComponent;

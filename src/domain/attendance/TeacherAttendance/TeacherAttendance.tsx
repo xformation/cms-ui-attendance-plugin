@@ -1,34 +1,31 @@
 import * as React from 'react';
 // import DatePicker from 'react-datepicker';
 import * as moment from 'moment';
-import { AttendanceServices } from '../_services';
+// import { AttendanceServices } from '../_services';
 import * as StudentAttendanceFilterQueryGql from './StudentAttendanceFilterQuery.graphql';
+// import * as LoadStudentAtndQueryGql from './LoadStudentAtndQuery.graphql';
 import * as StudentAttendanceUpdateMutationGql from './StudentAttendanceUpdateMutation.graphql';
 // import UpdateStudentAttendance from "./UpdateStudentAttendance";
-import { withRouter, RouteComponentProps } from 'react-router';
-import { graphql, MutationFunc, compose } from "react-apollo";
+// import { withRouter, RouteComponentProps } from 'react-router';
+import { graphql, QueryProps, MutationFunc, compose } from "react-apollo";
 import {
-  ReactFunctionOrComponentClass,
+  LoadStudentAtndQuery,
+  // ReactFunctionOrComponentClass,
   DailyStudentAttendanceListQuery,
   UpdateStudentAttendanceMutation
 } from '../../types';
-// import { any } from 'async';
-// import withLoadingHandler from '../../../components/withLoadingHandler';
-// import { strict } from 'assert';
+import withStudentAtndDataLoader from "./withStudentAtndDataLoader";
 
-type StudentAttendanceRootProps = RouteComponentProps<{}, {}, any>;
+type StudentAttendanceRootProps = {
+  data: QueryProps & LoadStudentAtndQuery;
+}
 
 type StudentAttendancePageProps = StudentAttendanceRootProps & {
   mutate: MutationFunc<DailyStudentAttendanceListQuery>;
-};
-
-type StudentAttendanceUpdatePageProps = StudentAttendanceRootProps & {
   mutateUpd: MutationFunc<UpdateStudentAttendanceMutation>;
 };
 
-
-
-type StudentFilterCriteria = {
+type StudentAttendanceState = {
   studentFilterData: any,
   branches: any,
   academicYears: any,
@@ -54,19 +51,19 @@ class SaData {
   }
 }
 
-class TeacherAttendance extends React.Component<StudentAttendancePageProps, StudentFilterCriteria>{
-  constructor(props: any, a: any) {
+class TeacherAttendance extends React.Component<StudentAttendancePageProps, StudentAttendanceState>{
+  constructor(props: StudentAttendancePageProps) {
     super(props);
     this.state = {
       studentFilterData: {
             branch: {
-              id: 1001
+              id: 1001 //1851
             },
             academicYear: {
-              id: 1051
+              id: 1051 //1701
             },
             teacher: {
-              id: 1301
+              id: 1301 //2151
             },
             department: {
                 id: ""
@@ -122,35 +119,35 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
 
   }
 
-  componentDidMount() {
-    Promise.all([AttendanceServices.getDepartments(), AttendanceServices.getYears(), AttendanceServices.getSemesters(), AttendanceServices.getSubjects(), AttendanceServices.getSections(), AttendanceServices.getLectures(), AttendanceServices.getTeaches(), AttendanceServices.getAttendanceMasters()]).then(
-      data => {
-        let departments = data[0];
-        let batches = data[1];
-        let semesters = data[2];
-        let subjects = data[3];
-        let sections = data[4];
-        let lectures = data[5];
-        let teaches = data[6];
-        let attendanceMasters = data[7];
+  // componentDidMount() {
+    // Promise.all([AttendanceServices.getDepartments()]).then(
+    //   data => {
+        // let departments = data[0];
+        // let batches = data[1];
+        // let semesters = data[2];
+        // let subjects = data[3];
+        // let sections = data[4];
+        // let lectures = data[5];
+        // let teaches = data[6];
+        // let attendanceMasters = data[7];
 
-        this.setState({
-          departments,
-          batches,
-          semesters,
-          subjects,
-          sections,
-          lectures,
-          teaches,
-          attendanceMasters
+        // this.setState({
+        //   departments,
+        //   batches,
+        //   semesters,
+        //   subjects,
+        //   sections,
+        //   lectures,
+        //   teaches,
+        //   attendanceMasters
 
-        });
-      },
-      error => {
-        console.log(error);
-      }
-    );
-  }
+        // });
+    //   },
+    //   error => {
+    //     console.log(error);
+    //   }
+    // );
+  // }
 
   createDepartments(departments: any, selectedBranchId: any, selectedAcademicYearId: any) {
     let departmentsOptions = [<option key={0} value="">Select department</option>];
@@ -163,11 +160,13 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
     }
     return departmentsOptions;
   }
+
   createBatches(batches: any, selectedDepartmentId: any) {
     let batchesOptions = [<option key={0} value="">Select Year</option>];
     for (let i = 0; i < batches.length; i++) {
       let id = batches[i].id;
-      if (batches[i].departmentId == selectedDepartmentId) {
+      let dptId = ""+batches[i].department.id;
+      if (dptId == selectedDepartmentId) {
         batchesOptions.push(
           <option key={id} value={id}>{batches[i].batch}</option>
         );
@@ -179,9 +178,9 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
     let subjectsOptions = [<option key={0} value="">Select Subject</option>];
     for (let i = 0; i < subjects.length; i++) {
       let id = subjects[i].id;
-      if (subjects[i].department.id == selectedDepartmentId && subjects[i].batch.id == selectedBatchId && subjects[i].teacherId == selectedTeacherId) {
+      if (subjects[i].department.id == selectedDepartmentId && subjects[i].batch.id == selectedBatchId ) {
         subjectsOptions.push(
-          <option key={id} value={id}>{subjects[i].subjectDesc}</option>
+            <option key={id} value={id}>{subjects[i].subjectDesc}</option>
         );
       }
     }
@@ -201,7 +200,8 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
     let sectionsOptions = [<option key={0} value="">Select Section</option>];
     for (let i = 0; i < sections.length; i++) {
       let id = sections[i].id;
-      if (sections[i].batchId == selectedBatchId) {
+      let sbthId = ""+sections[i].batch.id;
+      if (sbthId == selectedBatchId) {
         sectionsOptions.push(
           <option key={id} value={id}>{sections[i].section}</option>
         );
@@ -209,10 +209,11 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
     }
     return sectionsOptions;
   }
-  createLectures(lectures: any, teaches: any, attendanceMasters: any, subjectId: any, teacherId: any, batchId: any, sectionId: any) {
+  createLectures(lectures: any, teaches: any, attendanceMasters: any, subjectId: any, teacherId: any, selectedBatchId: any, selectedSectionId: any) {
     let theachId = "";
     for (let a = 0; a < teaches.length; a++) {
-      if (subjectId == teaches[a].subject.id && teacherId == teaches[a].teacher.id) {
+      let sbId = ""+teaches[a].subject.id;
+      if (subjectId == sbId && teacherId == teaches[a].teacher.id) {
         theachId = teaches[a].id;
         break;
       }
@@ -220,7 +221,10 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
 
     let amId = "";
     for (let a = 0; a < attendanceMasters.length; a++) {
-      if (theachId == attendanceMasters[a].teach.id && batchId == attendanceMasters[a].batch.id && sectionId == attendanceMasters[a].section.id) {
+      let atndBthId = ""+attendanceMasters[a].batch.id;
+      let atndSecId = ""+attendanceMasters[a].section.id;
+      let atndTchId = ""+attendanceMasters[a].teach.id;
+      if (theachId == atndTchId && selectedBatchId == atndBthId && selectedSectionId == atndSecId) {
         amId = attendanceMasters[a].id;
         break;
       }
@@ -232,7 +236,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
     // var day = todayTime.getDate();
     // var year = todayTime.getFullYear();
     // var dd =  day + "-" + ms + "-" + year;
-    var dd1 = moment(new Date()).format("DD-MM-YYYY");
+    var curDate = moment(new Date()).format("DD-MM-YYYY");
     // console.log('moment date dd1 : '+dd1);
     // var dp = new DatePickerComponent(dd1);
 
@@ -244,7 +248,8 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
     for (let i = 0; i < lectures.length; i++) {
       let id = lectures[i].id;
       // var lcdt = new DatePickerComponent(lectures[i].strLecDate);
-      if (lectures[i].strLecDate === dd1 && lectures[i].attendancemaster.id === amId) {
+      let lecAtndMsId = ""+lectures[i].attendancemaster.id;
+      if (lectures[i].strLecDate == curDate && lecAtndMsId == amId) {
         lecturesOptions.push(
           <option key={id} value={id}>Lecture - {i + 1} : {lectures[i].startTime} - {lectures[i].endTime}</option>
         );
@@ -322,6 +327,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
         variables: { filter: studentFilterInputData },
       }).then(data => {
         const sdt = data;
+        studentFilterData.mutateResult = [];
         studentFilterData.mutateResult.push(sdt);
         this.setState({
           studentFilterData: studentFilterData
@@ -420,8 +426,8 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
   }
 
   onClick = (e: any) => {
-    // const { mutateUpd } = this.props;
-    // const { mutate } = this.props;
+    
+    const { mutateUpd } = this.props;
     const { studentFilterData } = this.state;
     
     e.preventDefault();
@@ -462,13 +468,22 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
         let sadt = new SaData(txtIds, studentFilterData.lecture.id);
         studentFilterData.payLoad.push(sadt);
       }
-      
     });
+
     console.log('total IDS : ',studentFilterData.selectedIds);    
-    AttendanceServices.updateStudentAttendance(studentFilterData.payLoad).then(response => 
-      alert(response.statusDesc)
-      );
     
+    return mutateUpd({
+      variables: { input: studentFilterData.payLoad },
+    }).then(data => {
+      console.log('Update Result: ', data.data.updateStudentAttendanceData.statusDesc);
+      alert(data.data.updateStudentAttendanceData.statusDesc);
+    }).catch((error: any) => {
+      console.log('there is some error while updating student attendance data', error);
+      return Promise.reject(`there is some error while updating student attendance data: ${error}`);
+    });
+
+
+
   }
 
   handleChange= (e: any) => {
@@ -485,8 +500,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
   }
 
   render() {
-    // const { mutate, mutateUpd } = this.props;
-    // const { mutate } = this.props;
+    const { data: { createStudentAttendanceCache, refetch }, mutate, mutateUpd } = this.props;
     const { studentFilterData, departments, batches, semesters, subjects, sections, lectures, teaches, attendanceMasters, submitted } = this.state;
 
     return (
@@ -514,32 +528,32 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
                 <tr>
                   <td>
                     <select required name="department" id="department" onChange={this.onChange} value={studentFilterData.department.id} className="gf-form-input max-width-22">
-                      {this.createDepartments(departments, studentFilterData.branch.id, studentFilterData.academicYear.id)}
+                      {this.createDepartments(this.props.data.createStudentAttendanceCache.departments, studentFilterData.branch.id, studentFilterData.academicYear.id)}
                     </select>
                   </td>
                   <td>
                     <select required name="batch" id="batch" onChange={this.onChange} value={studentFilterData.batch.id} className="gf-form-input max-width-22">
-                      {this.createBatches(batches, studentFilterData.department.id)}
+                      {this.createBatches(this.props.data.createStudentAttendanceCache.batches, studentFilterData.department.id)}
                     </select>
                   </td>
                   <td>
                     <select required name="semester" id="semester" onChange={this.onChange} value={studentFilterData.semester.id} className="gf-form-input max-width-22">
-                      {this.createSemesters(semesters)}
+                      {this.createSemesters(this.props.data.createStudentAttendanceCache.semesters)}
                     </select>
                   </td>
                   <td>
                     <select required name="subject" id="subject" onChange={this.onChange} value={studentFilterData.subject.id} className="gf-form-input max-width-22">
-                      {this.createSubjects(subjects, studentFilterData.department.id, studentFilterData.batch.id, studentFilterData.teacher.id)}
+                      {this.createSubjects(this.props.data.createStudentAttendanceCache.subjects, studentFilterData.department.id, studentFilterData.batch.id, studentFilterData.teacher.id)}
                     </select>
                   </td>
                   <td>
                     <select required name="section" id="section" onChange={this.onChange} value={studentFilterData.section.id} className="gf-form-input max-width-22">
-                      {this.createSections(sections, studentFilterData.batch.id)}
+                      {this.createSections(this.props.data.createStudentAttendanceCache.sections, studentFilterData.batch.id)}
                     </select>
                   </td>
                   <td>
                     <select required name="lecture" id="lecture" onChange={this.onChange} value={studentFilterData.lecture.id} className="gf-form-input max-width-22">
-                      {this.createLectures(lectures, teaches, attendanceMasters, studentFilterData.subject.id, studentFilterData.teacher.id, studentFilterData.batch.id, studentFilterData.section.id)}
+                      {this.createLectures(this.props.data.createStudentAttendanceCache.lectures, this.props.data.createStudentAttendanceCache.teaches, this.props.data.createStudentAttendanceCache.attendanceMasters, studentFilterData.subject.id, studentFilterData.teacher.id, studentFilterData.batch.id, studentFilterData.section.id)}
                     </select>
                   </td>
                   <td>
@@ -711,24 +725,13 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
   }
 }
 
-
-// export default TeacherAttendance;
-// export default withRouter(
-//   graphql<DailyStudentAttendanceListQuery, StudentAttendanceListPageOwnProps>(StudentAttendanceFilterQueryGql) (
-//     TeacherAttendance
-//   )
-// );
-
-export default withRouter(
+export default withStudentAtndDataLoader(
   compose(
-    
     graphql<DailyStudentAttendanceListQuery, StudentAttendanceRootProps>(StudentAttendanceFilterQueryGql, {
       name: "mutate"
+    }),
+    graphql<UpdateStudentAttendanceMutation, StudentAttendanceRootProps>(StudentAttendanceUpdateMutationGql, {
+      name: "mutateUpd"
     })
-    // ,
-    // graphql<UpdateStudentAttendanceMutation, StudentAttendanceRootProps>(StudentAttendanceUpdateMutationGql, {
-    //   name: "mutateUpd"
-    // })
-  )
-  (TeacherAttendance)
-);  
+  )(TeacherAttendance) as any
+);
