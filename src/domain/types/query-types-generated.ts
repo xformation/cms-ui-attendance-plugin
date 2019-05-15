@@ -128,6 +128,12 @@ export type UpdateStudentAttendanceMutation = {
   };
 };
 
+export type LoadStudentAtndQueryVariables = {
+  branchId: string;
+  academicYearId: string;
+  teacherId: string;
+};
+
 export type LoadStudentAtndQuery = {
   createStudentAttendanceCache: {
     departments: Array<{
@@ -137,10 +143,6 @@ export type LoadStudentAtndQuery = {
       academicyear: {
         id: number;
         year: string;
-      };
-      branch: {
-        id: number;
-        branchName: string;
       };
     }>;
     batches: Array<{
@@ -152,10 +154,7 @@ export type LoadStudentAtndQuery = {
     }>;
     subjects: Array<{
       id: number;
-      subjectType: string;
-      subjectCode: string;
       subjectDesc: string;
-      status: string;
       department: {
         id: number;
       };
@@ -182,20 +181,12 @@ export type LoadStudentAtndQuery = {
       };
       subject: {
         id: number;
-        subjectDesc: string;
       };
     }>;
     attendanceMasters: Array<{
       id: number;
       teach: {
         id: number;
-        teacher: {
-          id: number;
-        };
-        subject: {
-          id: number;
-          subjectDesc: string;
-        };
       };
       batch: {
         id: number;
@@ -212,32 +203,6 @@ export type LoadStudentAtndQuery = {
       strLecDate: string;
       attendancemaster: {
         id: number;
-        desc: string;
-        batch: {
-          id: number;
-          batch: string;
-          department: {
-            id: number;
-          };
-        };
-        section: {
-          id: number;
-          section: string;
-          batch: {
-            id: number;
-          };
-        };
-        teach: {
-          id: number;
-          subject: {
-            id: number;
-            subjectDesc: string;
-          };
-          teacher: {
-            id: number;
-            teacherName: string;
-          };
-        };
       };
     }>;
   };

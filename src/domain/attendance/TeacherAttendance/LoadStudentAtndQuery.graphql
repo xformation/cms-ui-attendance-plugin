@@ -1,5 +1,5 @@
-query {
-  createStudentAttendanceCache{
+query createStudentAttendanceCache($branchId:String, $academicYearId:String, $teacherId:String){
+  createStudentAttendanceCache(branchId:$branchId, academicYearId:$academicYearId, teacherId:$teacherId) {
     departments{
       id,
       name,
@@ -7,10 +7,6 @@ query {
       academicyear{
         id,
         year
-      },
-      branch{
-        id,
-        branchName
       }
     },
     batches{
@@ -25,13 +21,12 @@ query {
       subjectType,
       subjectCode,
       subjectDesc,
-      status,
       department{
         id
       },
       batch{
         id
-      },
+      }
       
     },
     sections{
@@ -52,21 +47,13 @@ query {
         id
       }
       subject{
-        id,
-        subjectDesc
+        id
       }
     },
     attendanceMasters{
       id,
       teach{
-        id,
-        teacher{
-          id
-        },
-        subject{
-          id,
-          subjectDesc
-        }
+        id
       },
       batch{
         id
@@ -82,34 +69,7 @@ query {
       endTime,
       strLecDate,
       attendancemaster{
-        id,
-        desc,
-        batch{
-          id,
-          batch,
-          department{
-            id
-          }
-        },
-        section{
-          id,
-          section,
-          batch{
-            id
-          }
-        },
-        teach{
-          id,
-          subject{
-            id,
-            subjectDesc
-          },
-          teacher{
-            id,
-            teacherName,
-            
-          }
-        }
+        id
       }
     }
   } 

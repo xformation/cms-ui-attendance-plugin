@@ -7,6 +7,7 @@ import * as StudentAttendanceFilterQueryGql from './StudentAttendanceFilterQuery
 import * as StudentAttendanceUpdateMutationGql from './StudentAttendanceUpdateMutation.graphql';
 // import UpdateStudentAttendance from "./UpdateStudentAttendance";
 // import { withRouter, RouteComponentProps } from 'react-router';
+import { RouteComponentProps } from 'react-router-dom';
 import { graphql, QueryProps, MutationFunc, compose } from "react-apollo";
 import {
   LoadStudentAtndQuery,
@@ -16,13 +17,23 @@ import {
 } from '../../types';
 import withStudentAtndDataLoader from "./withStudentAtndDataLoader";
 
-type StudentAttendanceRootProps = {
+
+// type StudentAttendanceRootProps = {
+//   data: QueryProps & LoadStudentAtndQuery;
+// }
+
+type StudentAttendanceRootProps = RouteComponentProps<{
+  branchId: string;
+  academicYearId:  string;
+  teacherId: string;
+}> &{
   data: QueryProps & LoadStudentAtndQuery;
 }
 
 type StudentAttendancePageProps = StudentAttendanceRootProps & {
   mutate: MutationFunc<DailyStudentAttendanceListQuery>;
   mutateUpd: MutationFunc<UpdateStudentAttendanceMutation>;
+  
 };
 
 type StudentAttendanceState = {
@@ -57,13 +68,13 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
     this.state = {
       studentFilterData: {
             branch: {
-              id: 1001 //1851
+              id: 1851 //1001
             },
             academicYear: {
-              id: 1051 //1701
+              id: 1701 //1051 
             },
             teacher: {
-              id: 1301 //2151
+              id: 2170 //1301
             },
             department: {
                 id: ""
@@ -152,11 +163,11 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
   createDepartments(departments: any, selectedBranchId: any, selectedAcademicYearId: any) {
     let departmentsOptions = [<option key={0} value="">Select department</option>];
     for (let i = 0; i < departments.length; i++) {
-      if (selectedBranchId == departments[i].branch.id && selectedAcademicYearId == departments[i].academicyear.id) {
+      // if (selectedBranchId == departments[i].branch.id && selectedAcademicYearId == departments[i].academicyear.id) {
         departmentsOptions.push(
           <option key={departments[i].id} value={departments[i].id}>{departments[i].name}</option>
         );
-      }
+      // }
     }
     return departmentsOptions;
   }
@@ -364,6 +375,9 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
           },
           section: {
             id: ""
+          },
+          semester: {
+            id: ""
           }
         }
       });
@@ -378,6 +392,9 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
             id: ""
           },
           section: {
+            id: ""
+          },
+          semester: {
             id: ""
           }
         }
@@ -726,12 +743,17 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
 }
 
 export default withStudentAtndDataLoader(
+  
   compose(
     graphql<DailyStudentAttendanceListQuery, StudentAttendanceRootProps>(StudentAttendanceFilterQueryGql, {
       name: "mutate"
     }),
     graphql<UpdateStudentAttendanceMutation, StudentAttendanceRootProps>(StudentAttendanceUpdateMutationGql, {
-      name: "mutateUpd"
-    })
-  )(TeacherAttendance) as any
+      name: "mutateUpd",
+      // options: (props) => ({ variables: { branchId: 1001, academicYearId: 1051, teacherId:1301} }),
+    }),
+    
+  )
+  
+  (TeacherAttendance) as any
 );
