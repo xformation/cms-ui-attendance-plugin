@@ -1,5 +1,5 @@
-query createStudentAttendanceCache($branchId:String, $academicYearId:String, $teacherId:String){
-  createStudentAttendanceCache(branchId:$branchId, academicYearId:$academicYearId, teacherId:$teacherId) {
+query createStudentAttendanceCache($branchId:String, $academicYearId:String, $teacherId:String, $lectureDate: String){
+  createStudentAttendanceCache(branchId:$branchId, academicYearId:$academicYearId, teacherId:$teacherId, lectureDate:$lectureDate) {
     departments{
       id,
       name,

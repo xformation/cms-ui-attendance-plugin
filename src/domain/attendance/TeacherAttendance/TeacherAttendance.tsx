@@ -26,6 +26,7 @@ type StudentAttendanceRootProps = RouteComponentProps<{
   branchId: string;
   academicYearId:  string;
   teacherId: string;
+  lectureDate: string;
 }> &{
   data: QueryProps & LoadStudentAtndQuery;
 }
@@ -74,7 +75,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
               id: 1701 //1051 
             },
             teacher: {
-              id: 2170 //1301
+              id: 2178 //1301
             },
             department: {
                 id: ""

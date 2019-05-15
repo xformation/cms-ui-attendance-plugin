@@ -132,6 +132,7 @@ export type LoadStudentAtndQueryVariables = {
   branchId: string;
   academicYearId: string;
   teacherId: string;
+  lectureDate: string;
 };
 
 export type LoadStudentAtndQuery = {
