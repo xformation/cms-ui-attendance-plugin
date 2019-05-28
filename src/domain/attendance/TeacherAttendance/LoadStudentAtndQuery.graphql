@@ -27,7 +27,7 @@ query createStudentAttendanceCache($branchId:String, $academicYearId:String, $te
       batch{
         id
       }
-      
+
     },
     sections{
       id,
@@ -72,5 +72,5 @@ query createStudentAttendanceCache($branchId:String, $academicYearId:String, $te
         id
       }
     }
-  } 
+  }
 }

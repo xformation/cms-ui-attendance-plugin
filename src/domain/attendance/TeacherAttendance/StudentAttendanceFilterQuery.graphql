@@ -1,5 +1,3 @@
-
-
 mutation getDailyStudentAttendanceData($filter:StudentAttendanceFilterInput!) {
   getDailyStudentAttendanceData(filter: $filter) {
     studentId
@@ -11,6 +9,3 @@ mutation getDailyStudentAttendanceData($filter:StudentAttendanceFilterInput!) {
     comments
  }
 }
-
-
-

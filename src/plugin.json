@@ -31,15 +31,15 @@
     {
       "type": "page",
       "name": "AdminAttendance",
-      "addToNav": true,
-      "defaultNav": true,
+      "addToNav": false,
+      "defaultNav": false,
       "component": "AttendanceOverview"
     },
     {
       "type": "page",
-      "name": "MarkAttendance",
-      "addToNav": false,
-      "defaultNav": false,
+      "name": "AdminAttendance",
+      "addToNav": true,
+      "defaultNav": true,
       "component": "MarkAttendance"
     },
     {
