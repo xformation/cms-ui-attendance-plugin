@@ -31,13 +31,6 @@
     {
       "type": "page",
       "name": "AdminAttendance",
-      "addToNav": false,
-      "defaultNav": false,
-      "component": "AttendanceOverview"
-    },
-    {
-      "type": "page",
-      "name": "AdminAttendance",
       "addToNav": true,
       "defaultNav": true,
       "component": "MarkAttendance"

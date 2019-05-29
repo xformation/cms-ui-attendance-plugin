@@ -7,6 +7,7 @@ import { BrowserRouter, Switch, Route } from "react-router-dom";
 
 import { createGraphQLClient } from "../../../createGraphQLClient";
 import AttendanceOverview from "./AttendanceOverview";
+import MarkAttendance from "../MarkAttendance";
 import '../../../css/dark.css';
 
 const graphQLClient = createGraphQLClient();
@@ -17,7 +18,7 @@ export default function init() {
             <ApolloProvider client={graphQLClient}>
                 <BrowserRouter>
                     <Switch>
-                        <Route path="/plugins/ems-attendance/page/adminattendance" component={AttendanceOverview} />
+                        {/* <Route path="/plugins/ems-attendance/page/adminattendance" component={MarkAttendance} /> */}
                     </Switch>
                 </BrowserRouter>
             </ApolloProvider>,

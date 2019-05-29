@@ -19,22 +19,22 @@ export default function init() {
       <ApolloProvider client={graphQLClient}>
         <BrowserRouter>
           <Switch>
-            <Route
-              path="/plugins/ems-attendance/page/attendance"
-              component={AttendanceOverview}
-            />
-            <Route
-              path="/plugins/ems-attendance/page/markattendance"
+            {/* <Route
+              path="/plugins/ems-attendance/page/adminattendance"
               component={MarkAttendance}
-            />
-            <Route
+            /> */}
+            {/* <Route
+              path="/plugins/ems-attendance/page/attendance"
+              component={MarkAttendance}
+            /> */}
+            {/* <Route
               path="/plugins/ems-attendance/page/teacherattendance"
               component={TeacherAttendance}
-            />
-              <Route
+            /> */}
+              {/* <Route
               path="/plugins/ems-attendance/page/teachermarkattendance"
               component={TeacherMarkAttendance}
-            />
+            /> */}
           </Switch>
         </BrowserRouter>
       </ApolloProvider>,
