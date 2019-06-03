@@ -495,7 +495,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
                     <input type="text" value={moment(new Date()).format("DD-MM-YYYY")} disabled ></input>
                   </td>
                   <td>
-                    <button className="btn btn-primary" type="submit" id="btnTakeAtnd" name="btnTakeAtnd" >Take Attendance</button>
+                    <button className="btn btn-primary" type="submit" id="btnTakeAtnd" name="btnTakeAtnd" style={{ width: '130px' }} >Take Attendance</button>
 
                   </td>
                 </tr>
