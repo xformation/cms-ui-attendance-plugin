@@ -34,7 +34,7 @@ class DatePickerComponent extends React.Component<any, any> {
   }
 
   render() {
-    return <DatePicker selected={this.state.startDate} onChange={this.handleChange} id="dtPicker" />;
+    return <DatePicker selected={this.state.startDate} value={this.state.startDate} onChange={this.handleChange} id="dtPicker" name="dtPicker" />;
   }
 }
 
@@ -65,7 +65,8 @@ type StudentAttendanceState = {
   dtPicker: any,
   terms: any,
   attendanceMasters: any,
-  submitted: any
+  submitted: any,
+  startDate: any
 };
 
 class SaData {
@@ -133,7 +134,8 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
       dtPicker: [],
       terms: [],
       attendanceMasters: [],
-      submitted: false
+      submitted: false,
+      startDate: moment()
     };
 
     this.createDepartments = this.createDepartments.bind(this);
@@ -143,7 +145,8 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     this.createSections = this.createSections.bind(this);
     this.createLectures = this.createLectures.bind(this);
     this.createTerms = this.createTerms.bind(this);
-
+    this.handleChange = this.handleChange.bind(this);
+    this.changeDate = this.changeDate.bind(this);
   }
 
   createTerms(terms: any) {
@@ -217,31 +220,44 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     return sectionsOptions;
   }
 
-  createLectures(lectures: any, attendanceMasters: any, subjectId: any, teacherId: any, selectedBatchId: any, selectedSectionId: any) {
-    // let amId = "";
-    // for (let a = 0; a < attendanceMasters.length; a++) {
-    //   let atndBthId = ""+attendanceMasters[a].batch.id;
-    //   let atndSecId = ""+attendanceMasters[a].section.id;
-    //   if (selectedBatchId == atndBthId && selectedSectionId == atndSecId) {
-    //     amId = attendanceMasters[a].id;
-    //     break;
-    //   }
-    // }
+  createLectures(lectures: any, attendanceMasters: any, subjectId: any, selectedBatchId: any, selectedSectionId: any, changedDate: any) {
+    let amId = "";
+    for (let a = 0; a < attendanceMasters.length; a++) {
+      let atndBthId = ""+attendanceMasters[a].batch.id;
+      let atndSecId = ""+attendanceMasters[a].section.id;
+      if (selectedBatchId === atndBthId && selectedSectionId === atndSecId) {
+        amId = attendanceMasters[a].id;
+        break;
+      }
+    }
     // var curDate = moment(new Date()).format("DD-MM-YYYY");
-
+    let subObj : any = document.querySelector("#subject");
     let dtPk: any = document.querySelector("#dtPicker");
-    // var curDate = dtPk.value;
+    var curDate;// = moment(new Date(), "DD-MM-YYYY");
+
+    if(dtPk !== null){
+      // curDate = dtPk.value;
+      var ary = dtPk.value.split("/");
+      var tmpDt = ary[0] + "-" + ary[1] + "-" + ary[2];
+      curDate = moment(tmpDt, "DD-MM-YYYY");
+    }
+
+    if(changedDate !== null){
+      var tmpDt = moment(changedDate).format("DD-MM-YYYY");
+      curDate = moment(tmpDt, "DD-MM-YYYY");
+    }
+    // curDate = curDate.replaceAll("/", "-");
     let lecturesOptions = [<option key={0} value="">Select Lecture</option>];
     for (let i = 0; i < lectures.length; i++) {
       let id = lectures[i].id;
       // var lcdt = new DatePickerComponent(lectures[i].strLecDate);
-      let lecAtndMsId = "" + lectures[i].attendancemaster.id;
-      // if (lectures[i].strLecDate == curDate) {
-      lecturesOptions.push(
-        <option key={id} value={id}>Lecture - {i + 1} : {lectures[i].startTime} - {lectures[i].endTime}</option>
-      );
-
-      // }
+      let lecAtndMsId = lectures[i].attendancemaster.id;
+      let lcDt = moment(lectures[i].strLecDate, "DD-MM-YYYY")
+      if (lcDt.isSame(curDate) && lecAtndMsId === amId) { //lcDt.isSame(curDate)
+        lecturesOptions.push(
+          <option key={id} value={id}>{subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} - {lectures[i].endTime}</option>
+        );
+      }
     }
 
     return lecturesOptions;
@@ -441,7 +457,8 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
         }
       });
     }
-
+    
+    
   }
 
   onClick = (e: any) => {
@@ -518,6 +535,18 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
 
   }
 
+  
+  changeDate = (e: any) => {
+   
+    const { studentFilterData } = this.state;
+    const varDt = e;
+    console.log("handling date picker changed date...", varDt);
+    this.setState({
+      startDate : varDt
+    });
+    
+    this.createLectures(this.props.data.createStudentAttendanceCacheForAdmin.lectures, this.props.data.createStudentAttendanceCacheForAdmin.attendanceMasters, studentFilterData.subject.id, studentFilterData.batch.id, studentFilterData.section.id, varDt);
+  }
 
 
   render() {
@@ -580,12 +609,12 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
                   </td>
                   <td>
                     <select required name="lecture" id="lecture" onChange={this.onChange} value={studentFilterData.lecture.id} className="gf-form-input max-width-22">
-                      {this.createLectures(this.props.data.createStudentAttendanceCacheForAdmin.lectures, this.props.data.createStudentAttendanceCacheForAdmin.attendanceMasters, studentFilterData.subject.id, studentFilterData.teacher.id, studentFilterData.batch.id, studentFilterData.section.id)}
+                      {this.createLectures(this.props.data.createStudentAttendanceCacheForAdmin.lectures, this.props.data.createStudentAttendanceCacheForAdmin.attendanceMasters, studentFilterData.subject.id, studentFilterData.batch.id, studentFilterData.section.id, this.state.startDate)}
                     </select>
                   </td>
                   <td>
-                    <DatePickerComponent id="dtPicker"
-                      className="markDate" />
+                    {/* <DatePickerComponent id="dtPicker" name="dtPicker" className="markDate" onChange={this.onClick}/> */}
+                    <DatePicker selected={this.state.startDate} value={this.state.startDate} onChange={this.changeDate} id="dtPicker" name="dtPicker" />
                   </td>
                   <td>
                     <button className="btn btn-primary" type="submit" id="btnTakeAtnd" name="btnTakeAtnd" style={{ width: '130px' }}>Take Attendance</button>
