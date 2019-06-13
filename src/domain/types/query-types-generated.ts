@@ -121,6 +121,15 @@ export type DailyStudentAttendanceListQuery = {
   }>;
 };
 
+export type StudentAttendanceListQueryTypeForAdmin = {
+  getStudentAttendanceDataForAdmin: Array<{
+    studentId: string;
+    studentName: string;
+    currentDateStatus: string;
+    comments: string;
+  }>;
+};
+
 export type UpdateStudentAttendanceMutation = {
   updateStudentAttendanceData: {
     statusCode: string;
@@ -183,6 +192,76 @@ export type LoadStudentAtndQuery = {
       subject: {
         id: number;
       };
+    }>;
+    attendanceMasters: Array<{
+      id: number;
+      teach: {
+        id: number;
+      };
+      batch: {
+        id: number;
+      };
+      section: {
+        id: number;
+      };
+    }>;
+    lectures: Array<{
+      id: number;
+      lecDate: string;
+      startTime: string;
+      endTime: string;
+      strLecDate: string;
+      attendancemaster: {
+        id: number;
+      };
+    }>;
+  };
+};
+
+export type LoadStudentAtndQueryCacheForAdmin = {
+  createStudentAttendanceCacheForAdmin: {
+    departments: Array<{
+      id: number;
+      name: string;
+      description: string;
+      academicyear: {
+        id: number;
+        year: string;
+      };
+    }>;
+    batches: Array<{
+      id: number;
+      batch: string;
+      department: {
+        id: number;
+      };
+    }>;
+    subjects: Array<{
+      id: number;
+      subjectDesc: string;
+      department: {
+        id: number;
+      };
+      batch: {
+        id: number;
+      };
+    }>;
+    sections: Array<{
+      id: number;
+      section: string;
+      batch: {
+        id: number;
+      };
+    }>;
+    semesters: Array<{
+      id: number;
+      description: string;
+    }>;
+    terms: Array<{
+      id: number;
+      termsDesc: string;
+      strStartDate: string;
+      strEndDate: string;
     }>;
     attendanceMasters: Array<{
       id: number;
