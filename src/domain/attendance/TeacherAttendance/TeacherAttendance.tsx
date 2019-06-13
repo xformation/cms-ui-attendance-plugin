@@ -56,10 +56,11 @@ class SaData {
   studentIds: any;
   lectureId: any;
   constructor(studentIds: any, lectureId: any) {
-    studentIds;
-    lectureId;
+    this.studentIds = studentIds;
+    this.lectureId = lectureId;
   }
 }
+
 
 class TeacherAttendance extends React.Component<StudentAttendancePageProps, StudentAttendanceState>{
   constructor(props: StudentAttendancePageProps) {
@@ -73,7 +74,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
           id: 1701 //1051
         },
         teacher: {
-          id: 2178 //1301
+          id: 2151
         },
         department: {
           id: ""
@@ -366,6 +367,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
     const { studentFilterData } = this.state;
 
     e.preventDefault();
+    
     studentFilterData.selectedIds = "";
     let els = document.querySelectorAll("input[type=checkbox]");
     const delim = "#~#";
@@ -405,7 +407,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
       }
     });
 
-    console.log('total IDS : ', studentFilterData.selectedIds);
+    // console.log('total IDS : ', studentFilterData.selectedIds);
 
     return mutateUpd({
       variables: { input: studentFilterData.payLoad },
