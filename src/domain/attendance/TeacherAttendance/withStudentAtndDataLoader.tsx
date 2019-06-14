@@ -9,7 +9,8 @@ import withLoadingHandler from '../../../components/withLoadingHandler';
 type withStudentAtndPageDataLoaderProps = RouteComponentProps<{
   branchId: string;
   academicYearId: string;
-  collegeId: string;
+  teacherId: string;
+  lectureDate: string;
 }>;
 
 type TargetComponentProps = {
@@ -22,7 +23,7 @@ const withStudentAtndDataLoader = (TargetComponent: ReactFunctionOrComponentClas
       variables: {
         branchId: 1851,
         academicYearId: 1701,
-        teacherId: 2178,
+        teacherId: 2151,
         lectureDate: moment(new Date()).format("DD-MM-YYYY")
       }
     })
