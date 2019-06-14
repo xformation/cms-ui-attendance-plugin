@@ -282,7 +282,10 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
       // let myDate:Date = moment(dateString,"YYYY-MM-DD").format("DD-MM-YYYY")
 
       let dtPk: any = document.querySelector("#dtPicker");
-      let selectedDate = moment(dtPk.value, "DD/MM/YYYY");//.format("DD-MM-YYYY");
+      let selectedDate = this.state.startDate;//moment(dtPk.value, "DD/MM/YYYY");//.format("DD-MM-YYYY");
+      var tmpDt = moment(selectedDate).format("DD-MM-YYYY");
+      selectedDate = moment(tmpDt, "DD-MM-YYYY");
+      console.log("Date at the time of submission : ", selectedDate);
       let terms = this.props.data.createStudentAttendanceCacheForAdmin.terms;
       for (let i = 0; i < terms.length; i++) {
         let id = "" + terms[i].id + "";
@@ -311,7 +314,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
       e.target.querySelector("#detailGridTable").removeAttribute("class");
 
       dtPk.setAttribute("disabled", true);
-      console.log('date picker value : ', dtPk.value);
+      console.log('date picker value : ', moment(selectedDate).format("DD-MM-YYYY"));
 
       let studentFilterInputData = {
         branchId: studentFilterData.branch.id,
@@ -319,7 +322,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
         batchId: studentFilterData.batch.id,
         sectionId: studentFilterData.section.id,
         subjectId: studentFilterData.subject.id,
-        attendanceDate: dtPk.value,
+        attendanceDate: moment(selectedDate).format("DD-MM-YYYY"),
         lectureId: studentFilterData.lecture.id,
         academicYearId: studentFilterData.academicYear.id,
         termId: studentFilterData.term.id
