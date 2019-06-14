@@ -232,15 +232,15 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     }
     // var curDate = moment(new Date()).format("DD-MM-YYYY");
     let subObj : any = document.querySelector("#subject");
-    let dtPk: any = document.querySelector("#dtPicker");
-    var curDate;// = moment(new Date(), "DD-MM-YYYY");
+    // let dtPk: any = document.querySelector("#dtPicker");
+    var curDate = moment(new Date(), "DD-MM-YYYY");
 
-    if(dtPk !== null){
-      // curDate = dtPk.value;
-      var ary = dtPk.value.split("/");
-      var tmpDt = ary[0] + "-" + ary[1] + "-" + ary[2];
-      curDate = moment(tmpDt, "DD-MM-YYYY");
-    }
+    // if(dtPk !== null){
+    //   // curDate = dtPk.value;
+    //   var ary = dtPk.value.split("/");
+    //   var tmpDt = ary[0] + "-" + ary[1] + "-" + ary[2];
+    //   curDate = moment(tmpDt, "DD-MM-YYYY");
+    // }
 
     if(changedDate !== null){
       var tmpDt = moment(changedDate).format("DD-MM-YYYY");
