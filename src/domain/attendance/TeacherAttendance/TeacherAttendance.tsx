@@ -241,7 +241,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
       e.target.querySelector("#subject").setAttribute("disabled", true);
       e.target.querySelector("#section").setAttribute("disabled", true);
       e.target.querySelector("#lecture").setAttribute("disabled", true);
-      e.target.querySelector("#lecture").setAttribute("disabled", true);
+      
       e.target.querySelector("#detailGrid").setAttribute("class", "tflex bg-heading mt-1");
       e.target.querySelector("#detailGridTable").removeAttribute("class");
 
@@ -259,7 +259,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
 
 
       let btn = e.target.querySelector("button[type='submit']");
-
+      btn.setAttribute("disabled", true);
       return mutate({
         variables: { filter: studentFilterInputData },
       }).then(data => {
@@ -270,11 +270,38 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
           studentFilterData: studentFilterData
         });
         console.log('Query Result ::::: ', studentFilterData.mutateResult);
+        btn.removeAttribute("disabled");
+        let optDt : any = document.querySelector("#department");
+        optDt.removeAttribute("disabled");
+        let optBt : any = document.querySelector("#batch");
+        optBt.removeAttribute("disabled");
+        let optSm : any = document.querySelector("#semester");
+        optSm.removeAttribute("disabled");
+        let optSb : any = document.querySelector("#subject");
+        optSb.removeAttribute("disabled");
+        let optSc : any = document.querySelector("#section");
+        optSc.removeAttribute("disabled");
+        let optLc : any = document.querySelector("#lecture");
+        optLc.removeAttribute("disabled");
+        
 
       }).catch((error: any) => {
-
+        btn.removeAttribute("disabled");
+        let optDt : any = document.querySelector("#department");
+        optDt.removeAttribute("disabled");
+        let optBt : any = document.querySelector("#batch");
+        optBt.removeAttribute("disabled");
+        let optSm : any = document.querySelector("#semester");
+        optSm.removeAttribute("disabled");
+        let optSb : any = document.querySelector("#subject");
+        optSb.removeAttribute("disabled");
+        let optSc : any = document.querySelector("#section");
+        optSc.removeAttribute("disabled");
+        let optLc : any = document.querySelector("#lecture");
+        optLc.removeAttribute("disabled");
         console.log('there was an error sending the query result', error);
         return Promise.reject(`Could not retrieve student attendance data: ${error}`);
+       
       });
     }
   }
@@ -408,13 +435,16 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
     });
 
     // console.log('total IDS : ', studentFilterData.selectedIds);
-
+    let btn : any = document.querySelector("#btnSave");
+    btn.setAttribute("disabled", true);
     return mutateUpd({
       variables: { input: studentFilterData.payLoad },
     }).then(data => {
+      btn.removeAttribute("disabled");
       console.log('Update Result: ', data.data.updateStudentAttendanceData.statusDesc);
       alert(data.data.updateStudentAttendanceData.statusDesc);
     }).catch((error: any) => {
+      btn.removeAttribute("disabled");
       console.log('there is some error while updating student attendance data', error);
       return Promise.reject(`there is some error while updating student attendance data: ${error}`);
     });
@@ -622,6 +652,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
                                 </span>
                               )
                             }
+                            
                             {k.previousThreeDayStatus === 'LECTURE_NOT_SCHEDULED' &&
                               (
                                 <label >N/A</label>
@@ -629,7 +660,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
                             }
                           </td>
                           <td >
-                            <input type="text" id={"t" + k.studentId} defaultValue={k.comments} maxLength={255} onChange={this.handleChange} ></input>
+                              <input type="text" id={"t" + k.studentId} defaultValue={k.comments} maxLength={255} onChange={this.handleChange} ></input>
                           </td>
                         </tr>
                       ))

@@ -120,7 +120,8 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
         filtered: [],
         selectedIds: "",
         payLoad: [],
-        textValueMap: {}
+        textValueMap: {},
+        txtCmtVal : {}
       },
       branches: [],
       academicYears: [],
@@ -136,6 +137,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
       attendanceMasters: [],
       submitted: false,
       startDate: moment()
+      
     };
 
     this.createDepartments = this.createDepartments.bind(this);
@@ -147,6 +149,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     this.createTerms = this.createTerms.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.changeDate = this.changeDate.bind(this);
+    this.createGrid = this.createGrid.bind(this);
   }
 
   createTerms(terms: any) {
@@ -309,7 +312,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
       e.target.querySelector("#subject").setAttribute("disabled", true);
       e.target.querySelector("#section").setAttribute("disabled", true);
       e.target.querySelector("#lecture").setAttribute("disabled", true);
-      e.target.querySelector("#lecture").setAttribute("disabled", true);
+      
       // e.target.querySelector("#detailGrid").setAttribute("class", "tflex bg-heading mt-1");
       e.target.querySelector("#detailGridTable").removeAttribute("class");
 
@@ -345,12 +348,38 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
         console.log('Query Result ::::: ', studentFilterData.mutateResult);
 
         btn.removeAttribute("disabled");
-
-        // dataSavedMessage.style.display = "inline-block";
-        // location.href = `${location.origin}/plugins/ems-attendance/page/teacherattendance/${data}`;
+        let optTr : any = document.querySelector("#term");
+        optTr.removeAttribute("disabled");
+        let optDt : any = document.querySelector("#department");
+        optDt.removeAttribute("disabled");
+        let optBt : any = document.querySelector("#batch");
+        optBt.removeAttribute("disabled");
+        let optSm : any = document.querySelector("#semester");
+        optSm.removeAttribute("disabled");
+        let optSb : any = document.querySelector("#subject");
+        optSb.removeAttribute("disabled");
+        let optSc : any = document.querySelector("#section");
+        optSc.removeAttribute("disabled");
+        let optLc : any = document.querySelector("#lecture");
+        optLc.removeAttribute("disabled");
+        dtPk.removeAttribute("disabled");
       }).catch((error: any) => {
         btn.removeAttribute("disabled");
-        // dataSavedMessage.style.display = "inline-block";
+        let optTr : any = document.querySelector("#term");
+        optTr.removeAttribute("disabled");
+        let optDt : any = document.querySelector("#department");
+        optDt.removeAttribute("disabled");
+        let optBt : any = document.querySelector("#batch");
+        optBt.removeAttribute("disabled");
+        let optSm : any = document.querySelector("#semester");
+        optSm.removeAttribute("disabled");
+        let optSb : any = document.querySelector("#subject");
+        optSb.removeAttribute("disabled");
+        let optSc : any = document.querySelector("#section");
+        optSc.removeAttribute("disabled");
+        let optLc : any = document.querySelector("#lecture");
+        optLc.removeAttribute("disabled");
+        dtPk.removeAttribute("disabled");
         console.log('there was an error sending the query result - attendannce for admin role: ', error);
         return Promise.reject(`Could not retrieve student attendance data for admin: ${error}`);
       });
@@ -510,13 +539,17 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     });
 
     console.log('total IDS : ', studentFilterData.selectedIds);
-
+    
+    let btn : any = document.querySelector("#btnSave");
+    btn.setAttribute("disabled", true);
     return mutateUpd({
       variables: { input: studentFilterData.payLoad },
     }).then(data => {
+      btn.removeAttribute("disabled");
       console.log('Update Result: ', data.data.updateStudentAttendanceData.statusDesc);
       alert(data.data.updateStudentAttendanceData.statusDesc);
     }).catch((error: any) => {
+      btn.removeAttribute("disabled");
       console.log('there is some error while updating student attendance data', error);
       return Promise.reject(`there is some error while updating student attendance data: ${error}`);
     });
@@ -551,7 +584,58 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     this.createLectures(this.props.data.createStudentAttendanceCacheForAdmin.lectures, this.props.data.createStudentAttendanceCacheForAdmin.attendanceMasters, studentFilterData.subject.id, studentFilterData.batch.id, studentFilterData.section.id, varDt);
   }
 
-
+  createGrid(ary: any){
+    const { studentFilterData } = this.state;
+    const retVal = [];
+    const len = ary.length;
+    
+    for(let pd = 0; pd < len; pd++){
+      let v = ary[pd]; 
+      for(let x= 0; x< v.data.getStudentAttendanceDataForAdmin.length; x++){
+        let k = v.data.getStudentAttendanceDataForAdmin[x];
+        
+        retVal.push(
+          <tbody>
+            <tr>
+              <td>{k.studentId}</td>
+                <td>{k.studentName}</td>
+                <td>
+                  {k.currentDateStatus === 'PRESENT' &&
+                    (
+                      <label className="switch">
+                        {' '}
+                        <input type="checkbox" id={k.studentId} name={k.studentId} defaultChecked /> <span className="slider" />{' '}
+                      </label>
+                    )
+                  }
+                  {k.currentDateStatus === 'ABSENT' &&
+                    (
+                      <label className="switch">
+                        {' '}
+                        <input type="checkbox" id={k.studentId} name={k.studentId} /> <span className="slider" />{' '}
+                      </label>
+                    )
+                  }
+                  {k.currentDateStatus === 'LECTURE_NOT_SCHEDULED' &&
+                    (
+                      <label >N/A</label>
+                    )
+                  }
+                </td>
+                <td>
+                
+                    <input type="text" id={"t" + k.studentId} defaultValue={k.comments} maxLength={255} onChange={this.handleChange} ></input>
+                
+                </td>
+            </tr>
+            </tbody>
+        );
+        
+        
+      }
+    }
+    return retVal;
+  }
   render() {
     const { data: { createStudentAttendanceCacheForAdmin, refetch }, mutate, mutateUpd } = this.props;
     const { studentFilterData, departments, batches, semesters, subjects, sections, lectures, terms, attendanceMasters, submitted } = this.state;
@@ -655,44 +739,12 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
                     <th>Comments</th>
                   </tr>
                 </thead>
-                <tbody>
+                
                   {
-                    this.state.studentFilterData.mutateResult.map((pd: any) => (
-                      pd.data.getStudentAttendanceDataForAdmin.map((k: any) => (
-                        <tr>
-                          <td>{k.studentId}</td>
-                          <td>{k.studentName}</td>
-                          <td>
-                            {k.currentDateStatus === 'PRESENT' &&
-                              (
-                                <label className="switch">
-                                  {' '}
-                                  <input type="checkbox" id={k.studentId} name={k.studentId} defaultChecked /> <span className="slider" />{' '}
-                                </label>
-                              )
-                            }
-                            {k.currentDateStatus === 'ABSENT' &&
-                              (
-                                <label className="switch">
-                                  {' '}
-                                  <input type="checkbox" id={k.studentId} name={k.studentId} /> <span className="slider" />{' '}
-                                </label>
-                              )
-                            }
-                            {k.currentDateStatus === 'LECTURE_NOT_SCHEDULED' &&
-                              (
-                                <label >N/A</label>
-                              )
-                            }
-                          </td>
-                          <td >
-                            <input type="text" id={"t" + k.studentId} defaultValue={k.comments} maxLength={255} onChange={this.handleChange} ></input>
-                          </td>
-                        </tr>
-                      ))
-                    ))
+                    this.createGrid(this.state.studentFilterData.mutateResult)
+                    
                   }
-                </tbody>
+               
               </table>
 
               <div className="d-flex fwidth justify-content-between pt-2">
