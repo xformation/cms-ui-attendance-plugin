@@ -43,8 +43,8 @@ type StudentAttendanceRootProps = RouteComponentProps<{
   academicYearId: string;
   lectureDate: string;
 }> & {
-  data: QueryProps & LoadStudentAtndQueryCacheForAdmin;
-}
+    data: QueryProps & LoadStudentAtndQueryCacheForAdmin;
+  }
 
 type StudentAttendancePageProps = StudentAttendanceRootProps & {
   mutate: MutationFunc<StudentAttendanceListQueryTypeForAdmin>;
@@ -66,7 +66,9 @@ type StudentAttendanceState = {
   terms: any,
   attendanceMasters: any,
   submitted: any,
-  startDate: any
+  startDate: any,
+  searchKey: any,
+  sortBy: any
 };
 
 class SaData {
@@ -121,8 +123,10 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
         selectedIds: "",
         payLoad: [],
         textValueMap: {},
-        txtCmtVal : {}
+        txtCmtVal: {}
       },
+      searchKey: "",
+      sortBy: "",
       branches: [],
       academicYears: [],
       teachers: [],
@@ -137,7 +141,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
       attendanceMasters: [],
       submitted: false,
       startDate: moment()
-      
+
     };
 
     this.createDepartments = this.createDepartments.bind(this);
@@ -226,15 +230,15 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
   createLectures(lectures: any, attendanceMasters: any, subjectId: any, selectedBatchId: any, selectedSectionId: any, changedDate: any) {
     let amId = "";
     for (let a = 0; a < attendanceMasters.length; a++) {
-      let atndBthId = ""+attendanceMasters[a].batch.id;
-      let atndSecId = ""+attendanceMasters[a].section.id;
+      let atndBthId = "" + attendanceMasters[a].batch.id;
+      let atndSecId = "" + attendanceMasters[a].section.id;
       if (selectedBatchId === atndBthId && selectedSectionId === atndSecId) {
         amId = attendanceMasters[a].id;
         break;
       }
     }
     // var curDate = moment(new Date()).format("DD-MM-YYYY");
-    let subObj : any = document.querySelector("#subject");
+    let subObj: any = document.querySelector("#subject");
     // let dtPk: any = document.querySelector("#dtPicker");
     var curDate = moment(new Date(), "DD-MM-YYYY");
 
@@ -245,7 +249,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     //   curDate = moment(tmpDt, "DD-MM-YYYY");
     // }
 
-    if(changedDate !== null){
+    if (changedDate !== null) {
       var tmpDt = moment(changedDate).format("DD-MM-YYYY");
       curDate = moment(tmpDt, "DD-MM-YYYY");
     }
@@ -312,7 +316,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
       e.target.querySelector("#subject").setAttribute("disabled", true);
       e.target.querySelector("#section").setAttribute("disabled", true);
       e.target.querySelector("#lecture").setAttribute("disabled", true);
-      
+
       // e.target.querySelector("#detailGrid").setAttribute("class", "tflex bg-heading mt-1");
       e.target.querySelector("#detailGridTable").removeAttribute("class");
 
@@ -348,36 +352,36 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
         console.log('Query Result ::::: ', studentFilterData.mutateResult);
 
         btn.removeAttribute("disabled");
-        let optTr : any = document.querySelector("#term");
+        let optTr: any = document.querySelector("#term");
         optTr.removeAttribute("disabled");
-        let optDt : any = document.querySelector("#department");
+        let optDt: any = document.querySelector("#department");
         optDt.removeAttribute("disabled");
-        let optBt : any = document.querySelector("#batch");
+        let optBt: any = document.querySelector("#batch");
         optBt.removeAttribute("disabled");
-        let optSm : any = document.querySelector("#semester");
+        let optSm: any = document.querySelector("#semester");
         optSm.removeAttribute("disabled");
-        let optSb : any = document.querySelector("#subject");
+        let optSb: any = document.querySelector("#subject");
         optSb.removeAttribute("disabled");
-        let optSc : any = document.querySelector("#section");
+        let optSc: any = document.querySelector("#section");
         optSc.removeAttribute("disabled");
-        let optLc : any = document.querySelector("#lecture");
+        let optLc: any = document.querySelector("#lecture");
         optLc.removeAttribute("disabled");
         dtPk.removeAttribute("disabled");
       }).catch((error: any) => {
         btn.removeAttribute("disabled");
-        let optTr : any = document.querySelector("#term");
+        let optTr: any = document.querySelector("#term");
         optTr.removeAttribute("disabled");
-        let optDt : any = document.querySelector("#department");
+        let optDt: any = document.querySelector("#department");
         optDt.removeAttribute("disabled");
-        let optBt : any = document.querySelector("#batch");
+        let optBt: any = document.querySelector("#batch");
         optBt.removeAttribute("disabled");
-        let optSm : any = document.querySelector("#semester");
+        let optSm: any = document.querySelector("#semester");
         optSm.removeAttribute("disabled");
-        let optSb : any = document.querySelector("#subject");
+        let optSb: any = document.querySelector("#subject");
         optSb.removeAttribute("disabled");
-        let optSc : any = document.querySelector("#section");
+        let optSc: any = document.querySelector("#section");
         optSc.removeAttribute("disabled");
-        let optLc : any = document.querySelector("#lecture");
+        let optLc: any = document.querySelector("#lecture");
         optLc.removeAttribute("disabled");
         dtPk.removeAttribute("disabled");
         console.log('there was an error sending the query result - attendannce for admin role: ', error);
@@ -488,9 +492,15 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
           }
         }
       });
+    } else if (name === "searchKey") {
+      this.setState({
+        "searchKey": value
+      });
+    } else if (name === "sortBy") {
+      this.setState({
+        "sortBy": value
+      });
     }
-    
-    
   }
 
   onClick = (e: any) => {
@@ -539,8 +549,8 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     });
 
     console.log('total IDS : ', studentFilterData.selectedIds);
-    
-    let btn : any = document.querySelector("#btnSave");
+
+    let btn: any = document.querySelector("#btnSave");
     btn.setAttribute("disabled", true);
     return mutateUpd({
       variables: { input: studentFilterData.payLoad },
@@ -571,33 +581,36 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
 
   }
 
-  
+
   changeDate = (e: any) => {
-   
+
     const { studentFilterData } = this.state;
     const varDt = e;
     console.log("handling date picker changed date...", varDt);
     this.setState({
-      startDate : varDt
+      startDate: varDt
     });
-    
+
     this.createLectures(this.props.data.createStudentAttendanceCacheForAdmin.lectures, this.props.data.createStudentAttendanceCacheForAdmin.attendanceMasters, studentFilterData.subject.id, studentFilterData.batch.id, studentFilterData.section.id, varDt);
   }
 
-  createGrid(ary: any){
-    const { studentFilterData } = this.state;
+  createGrid(ary: any) {
+    const { studentFilterData, searchKey, sortBy } = this.state;
     const retVal = [];
     const len = ary.length;
-    
-    for(let pd = 0; pd < len; pd++){
-      let v = ary[pd]; 
-      for(let x= 0; x< v.data.getStudentAttendanceDataForAdmin.length; x++){
+    let trimmedSearchKey = searchKey.trim();
+    if (sortBy) {
+      this.sortStudents(ary, sortBy);
+    }
+    for (let pd = 0; pd < len; pd++) {
+      let v = ary[pd];
+      for (let x = 0; x < v.data.getStudentAttendanceDataForAdmin.length; x++) {
         let k = v.data.getStudentAttendanceDataForAdmin[x];
-        
-        retVal.push(
-          <tbody>
-            <tr>
-              <td>{k.studentId}</td>
+        if (!trimmedSearchKey || (trimmedSearchKey && k.studentName.indexOf(trimmedSearchKey) !== -1)) {
+          retVal.push(
+            <tbody>
+              <tr>
+                <td>{k.studentId}</td>
                 <td>{k.studentName}</td>
                 <td>
                   {k.currentDateStatus === 'PRESENT' &&
@@ -623,18 +636,35 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
                   }
                 </td>
                 <td>
-                
-                    <input type="text" id={"t" + k.studentId} defaultValue={k.comments} maxLength={255} onChange={this.handleChange} ></input>
-                
+
+                  <input type="text" id={"t" + k.studentId} defaultValue={k.comments} maxLength={255} onChange={this.handleChange} ></input>
+
                 </td>
-            </tr>
+              </tr>
             </tbody>
-        );
-        
-        
+          );
+        }
       }
     }
     return retVal;
+  }
+  sortStudents(arr: any, sortBy: any) {
+    const len = arr.length;
+    for (let i = 0; i < len; i++) {
+      let studentList = arr[i].data.getStudentAttendanceDataForAdmin;
+      studentList.sort((a: any, b: any) => {
+        if (sortBy === "studentName") {
+          if (a[sortBy] > b[sortBy]) {
+            return 1;
+          } else if (a[sortBy] < b[sortBy]) {
+            return -1;
+          }
+          return 0;
+        } else {
+          return (parseInt(a[sortBy]) - parseInt(b[sortBy]));
+        }
+      });
+    }
   }
   render() {
     const { data: { createStudentAttendanceCacheForAdmin, refetch }, mutate, mutateUpd } = this.props;
@@ -716,14 +746,14 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
               <div className="hhflex">
 
                 <div className="mx-2">
-                  <select className="ma-select">
+                  <select className="ma-select" name="sortBy" onChange={this.onChange} value={this.state.sortBy}>
                     <option value="">Sort By</option>
-                    <option value="">Name</option>
-                    <option value="">ID</option>
+                    <option value="studentName">Name</option>
+                    <option value="studentId">ID</option>
                   </select>
                 </div>
                 <div className="h-center ma-select">
-                  <input type="text" placeholder="Search Student" className="ma-select" />
+                  <input type="text" placeholder="Search Student" className="ma-select" name="searchKey" value={this.state.searchKey} onChange={this.onChange} />
                   <i className="fa fa-search" aria-hidden="true" />
                 </div>
               </div>
@@ -739,12 +769,12 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
                     <th>Comments</th>
                   </tr>
                 </thead>
-                
-                  {
-                    this.createGrid(this.state.studentFilterData.mutateResult)
-                    
-                  }
-               
+
+                {
+                  this.createGrid(this.state.studentFilterData.mutateResult)
+
+                }
+
               </table>
 
               <div className="d-flex fwidth justify-content-between pt-2">
