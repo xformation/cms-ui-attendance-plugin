@@ -11,8 +11,7 @@ import {
   UpdateStudentAttendanceMutation
 } from '../../types';
 import withStudentAtndDataLoader from "./withStudentAtndDataLoader";
-
-
+import { constants } from '../../../constants';
 
 interface type {
   checked: boolean;
@@ -55,7 +54,6 @@ type StudentAttendanceState = {
   studentFilterData: any,
   branches: any,
   academicYears: any,
-  teachers: any,
   departments: any,
   batches: any,
   semesters: any,
@@ -86,16 +84,13 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     this.state = {
       studentFilterData: {
         branch: {
-          id: 1851 //1001
+          id: "0" 
         },
         academicYear: {
-          id: 1701 //1051
-        },
-        teacher: {
-          id: 2178 //1301
+          id: "0" 
         },
         department: {
-          id: ""
+          id: "0"
         },
         batch: {
           id: ""
@@ -129,7 +124,6 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
       sortBy: "",
       branches: [],
       academicYears: [],
-      teachers: [],
       departments: [],
       batches: [],
       semesters: [],
@@ -144,7 +138,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
 
     };
 
-    this.createDepartments = this.createDepartments.bind(this);
+    // this.createDepartments = this.createDepartments.bind(this);
     this.createBatches = this.createBatches.bind(this);
     this.createSemesters = this.createSemesters.bind(this);
     this.createSubjects = this.createSubjects.bind(this);
@@ -154,10 +148,39 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     this.handleChange = this.handleChange.bind(this);
     this.changeDate = this.changeDate.bind(this);
     this.createGrid = this.createGrid.bind(this);
+    this.getGlobalConfig = this.getGlobalConfig.bind(this);
+  }
+
+  async getGlobalConfig(sigUser: any) {
+    const rs = await fetch(constants.CMS_GLOBAL_CONFIG_URL+'?userName='+sigUser);
+    const json = await rs.json();
+    return json;
+  }
+
+  componentDidMount() {
+    const params = new URLSearchParams(location.search);
+    const sigUser = params.get('signedInUser');
+    const { studentFilterData } = this.state;
+    
+    const dt = Promise.resolve(this.getGlobalConfig(sigUser));
+    dt.then ((data) => {
+      if(data.selectedAcademicYearId){
+        studentFilterData.academicYear.id = data.selectedAcademicYearId;
+      }
+      if(data.selectedBranchId){
+        studentFilterData.branch.id = data.selectedBranchId;
+      }
+      if(data.selectedDepartmentId){
+        studentFilterData.department.id = data.selectedDepartmentId;
+      }
+      
+      this.setState({
+        studentFilterData: studentFilterData
+      });
+    });
   }
 
   createTerms(terms: any) {
-
     let termsOptions = [<option key={0} value="">Select Term</option>];
     for (let i = 0; i < terms.length; i++) {
       let desc = 'From ' + terms[i].strStartDate + ' - To - ' + terms[i].strEndDate;
@@ -168,15 +191,15 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     return termsOptions;
   }
 
-  createDepartments(departments: any, selectedBranchId: any, selectedAcademicYearId: any) {
-    let departmentsOptions = [<option key={0} value="">Select Department</option>];
-    for (let i = 0; i < departments.length; i++) {
-      departmentsOptions.push(
-        <option key={departments[i].id} value={departments[i].id}>{departments[i].name}</option>
-      );
-    }
-    return departmentsOptions;
-  }
+  // createDepartments(departments: any, selectedBranchId: any, selectedAcademicYearId: any) {
+  //   let departmentsOptions = [<option key={0} value="">Select Department</option>];
+  //   for (let i = 0; i < departments.length; i++) {
+  //     departmentsOptions.push(
+  //       <option key={departments[i].id} value={departments[i].id}>{departments[i].name}</option>
+  //     );
+  //   }
+  //   return departmentsOptions;
+  // }
 
   createBatches(batches: any, selectedDepartmentId: any) {
     let batchesOptions = [<option key={0} value="">Select Year</option>];
@@ -191,7 +214,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     }
     return batchesOptions;
   }
-  createSubjects(subjects: any, selectedDepartmentId: any, selectedBatchId: any, selectedTeacherId: any) {
+  createSubjects(subjects: any, selectedDepartmentId: any, selectedBatchId: any) {
     let subjectsOptions = [<option key={0} value="">Select Subject</option>];
     for (let i = 0; i < subjects.length; i++) {
       let id = subjects[i].id;
@@ -417,25 +440,27 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
           }
         }
       });
-    } else if (name === "department") {
-      this.setState({
-        studentFilterData: {
-          ...studentFilterData,
-          department: {
-            id: value
-          },
-          batch: {
-            id: ""
-          },
-          section: {
-            id: ""
-          },
-          semester: {
-            id: ""
-          }
-        }
-      });
-    } else if (name === "batch") {
+    } 
+    // else if (name === "department") {
+    //   this.setState({
+    //     studentFilterData: {
+    //       ...studentFilterData,
+    //       department: {
+    //         id: value
+    //       },
+    //       batch: {
+    //         id: ""
+    //       },
+    //       section: {
+    //         id: ""
+    //       },
+    //       semester: {
+    //         id: ""
+    //       }
+    //     }
+    //   });
+    // } 
+    else if (name === "batch") {
       this.setState({
         studentFilterData: {
           ...studentFilterData,
@@ -667,7 +692,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     }
   }
   render() {
-    const { data: { createStudentAttendanceCacheForAdmin, refetch }, mutate, mutateUpd } = this.props;
+    const { data: { createStudentAttendanceCacheForAdmin, refetch }, mutate, mutateUpd, history, match } = this.props;
     const { studentFilterData, departments, batches, semesters, subjects, sections, lectures, terms, attendanceMasters, submitted } = this.state;
 
     return (
@@ -682,7 +707,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
               <thead>
                 <tr>
                   <th>Term</th>
-                  <th>Department</th>
+                  {/* <th>Department</th> */}
                   <th>Year</th>
                   <th>Semester</th>
                   <th>Subject</th>
@@ -699,11 +724,11 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
                       {this.createTerms(this.props.data.createStudentAttendanceCacheForAdmin.terms)}
                     </select>
                   </td>
-                  <td>
+                  {/* <td>
                     <select required name="department" id="department" onChange={this.onChange} value={studentFilterData.department.id} className="gf-form-input max-width-22">
                       {this.createDepartments(this.props.data.createStudentAttendanceCacheForAdmin.departments, studentFilterData.branch.id, studentFilterData.academicYear.id)}
                     </select>
-                  </td>
+                  </td> */}
                   <td>
                     <select required name="batch" id="batch" onChange={this.onChange} value={studentFilterData.batch.id} className="gf-form-input max-width-22">
                       {this.createBatches(this.props.data.createStudentAttendanceCacheForAdmin.batches, studentFilterData.department.id)}
@@ -716,7 +741,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
                   </td>
                   <td>
                     <select required name="subject" id="subject" onChange={this.onChange} value={studentFilterData.subject.id} className="gf-form-input max-width-22">
-                      {this.createSubjects(this.props.data.createStudentAttendanceCacheForAdmin.subjects, studentFilterData.department.id, studentFilterData.batch.id, studentFilterData.teacher.id)}
+                      {this.createSubjects(this.props.data.createStudentAttendanceCacheForAdmin.subjects, studentFilterData.department.id, studentFilterData.batch.id)}
                     </select>
                   </td>
                   <td>
@@ -802,7 +827,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
 }
 
 export default withStudentAtndDataLoader(
-
+  
   compose(
     graphql<StudentAttendanceListQueryTypeForAdmin, StudentAttendanceRootProps>(StudentAttendanceFilterQueryGql, {
       name: "mutate"
@@ -810,8 +835,7 @@ export default withStudentAtndDataLoader(
     graphql<UpdateStudentAttendanceMutation, StudentAttendanceRootProps>(StudentAttendanceUpdateMutationGql, {
       name: "mutateUpd",
     }),
-
   )
-
-    (MarkAttendance) as any
+  
+  (MarkAttendance) as any
 );
