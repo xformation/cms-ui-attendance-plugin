@@ -426,9 +426,9 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
           term: {
             id: value
           },
-          department: {
-            id: ""
-          },
+          // department: {
+          //   id: ""
+          // },
           batch: {
             id: ""
           },
