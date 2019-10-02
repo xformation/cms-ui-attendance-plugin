@@ -81,16 +81,17 @@ class SaData {
 class MarkAttendance extends React.Component<StudentAttendancePageProps, StudentAttendanceState>{
   constructor(props: StudentAttendancePageProps) {
     super(props);
+    const params = new URLSearchParams(location.search);
     this.state = {
       studentFilterData: {
         branch: {
-          id: "0" 
+          id: params.get('bid') 
         },
         academicYear: {
-          id: "0" 
+          id: params.get('ayid') 
         },
         department: {
-          id: "0"
+          id: params.get('dptid')
         },
         batch: {
           id: ""
@@ -148,38 +149,8 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     this.handleChange = this.handleChange.bind(this);
     this.changeDate = this.changeDate.bind(this);
     this.createGrid = this.createGrid.bind(this);
-    this.getGlobalConfig = this.getGlobalConfig.bind(this);
   }
-
-  async getGlobalConfig(sigUser: any) {
-    const rs = await fetch(constants.CMS_GLOBAL_CONFIG_URL+'?userName='+sigUser);
-    const json = await rs.json();
-    return json;
-  }
-
-  componentDidMount() {
-    const params = new URLSearchParams(location.search);
-    const sigUser = params.get('signedInUser');
-    const { studentFilterData } = this.state;
-    
-    const dt = Promise.resolve(this.getGlobalConfig(sigUser));
-    dt.then ((data) => {
-      if(data.selectedAcademicYearId){
-        studentFilterData.academicYear.id = data.selectedAcademicYearId;
-      }
-      if(data.selectedBranchId){
-        studentFilterData.branch.id = data.selectedBranchId;
-      }
-      if(data.selectedDepartmentId){
-        studentFilterData.department.id = data.selectedDepartmentId;
-      }
-      
-      this.setState({
-        studentFilterData: studentFilterData
-      });
-    });
-  }
-
+  
   createTerms(terms: any) {
     let termsOptions = [<option key={0} value="">Select Term</option>];
     for (let i = 0; i < terms.length; i++) {

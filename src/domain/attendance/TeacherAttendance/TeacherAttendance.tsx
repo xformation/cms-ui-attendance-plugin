@@ -66,19 +66,20 @@ class SaData {
 class TeacherAttendance extends React.Component<StudentAttendancePageProps, StudentAttendanceState>{
   constructor(props: StudentAttendancePageProps) {
     super(props);
+    const params = new URLSearchParams(location.search);
     this.state = {
       studentFilterData: {
         branch: {
-          id: "0" 
+          id: params.get('bid')
         },
         academicYear: {
-          id: "0" 
+          id: params.get('ayid')
         },
         teacher: {
-          id: "0"
+          id: params.get('signedInUser')
         },
         department: {
-          id: "0"
+          id: params.get('dptid')
         },
         batch: {
           id: ""
@@ -126,38 +127,6 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
     this.createSubjects = this.createSubjects.bind(this);
     this.createSections = this.createSections.bind(this);
     this.createLectures = this.createLectures.bind(this);
-    this.getGlobalConfig = this.getGlobalConfig.bind(this);
-  }
-
-  async getGlobalConfig(sigUser: any) {
-    const rs = await fetch(constants.CMS_GLOBAL_CONFIG_URL+'?userName='+sigUser);
-    const json = await rs.json();
-    return json;
-  }
-
-  componentDidMount() {
-    const params = new URLSearchParams(location.search);
-    const sigUser = params.get('signedInUser');
-    const { studentFilterData } = this.state;
-    
-    const dt = Promise.resolve(this.getGlobalConfig(sigUser));
-    dt.then ((data) => {
-      if(data.selectedAcademicYearId){
-        studentFilterData.academicYear.id = data.selectedAcademicYearId;
-      }
-      if(data.selectedBranchId){
-        studentFilterData.branch.id = data.selectedBranchId;
-      }
-      if(data.selectedDepartmentId){
-        studentFilterData.department.id = data.selectedDepartmentId;
-      }
-      if(data.userId){
-        studentFilterData.teacher.id = data.userId;
-      }
-      this.setState({
-        studentFilterData: studentFilterData
-      });
-    });
   }
 
   // createDepartments(departments: any, selectedBranchId: any, selectedAcademicYearId: any) {
@@ -184,7 +153,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
     }
     return batchesOptions;
   }
-  createSubjects(subjects: any, selectedDepartmentId: any, selectedBatchId: any, selectedTeacherId: any) {
+  createSubjects(subjects: any, selectedDepartmentId: any, selectedBatchId: any) {
     let subjectsOptions = [<option key={0} value="">Select Subject</option>];
     for (let i = 0; i < subjects.length; i++) {
       let id = subjects[i].id;
@@ -219,11 +188,11 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
     }
     return sectionsOptions;
   }
-  createLectures(lectures: any, teaches: any, attendanceMasters: any, subjectId: any, teacherId: any, selectedBatchId: any, selectedSectionId: any) {
+  createLectures(lectures: any, teaches: any, attendanceMasters: any, subjectId: any, selectedBatchId: any, selectedSectionId: any) {
     let theachId = "";
     for (let a = 0; a < teaches.length; a++) {
       let sbId = "" + teaches[a].subject.id;
-      if (subjectId == sbId && teacherId == teaches[a].teacher.id) {
+      if (subjectId == sbId) {
         theachId = teaches[a].id;
         break;
       }
@@ -544,7 +513,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
                   </td>
                   <td>
                     <select required name="subject" id="subject" onChange={this.onChange} value={studentFilterData.subject.id} className="gf-form-input max-width-22">
-                      {this.createSubjects(this.props.data.createStudentAttendanceCache.subjects, studentFilterData.department.id, studentFilterData.batch.id, studentFilterData.teacher.id)}
+                      {this.createSubjects(this.props.data.createStudentAttendanceCache.subjects, studentFilterData.department.id, studentFilterData.batch.id)}
                     </select>
                   </td>
                   <td>
@@ -554,7 +523,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
                   </td>
                   <td>
                     <select required name="lecture" id="lecture" onChange={this.onChange} value={studentFilterData.lecture.id} className="gf-form-input max-width-22">
-                      {this.createLectures(this.props.data.createStudentAttendanceCache.lectures, this.props.data.createStudentAttendanceCache.teaches, this.props.data.createStudentAttendanceCache.attendanceMasters, studentFilterData.subject.id, studentFilterData.teacher.id, studentFilterData.batch.id, studentFilterData.section.id)}
+                      {this.createLectures(this.props.data.createStudentAttendanceCache.lectures, this.props.data.createStudentAttendanceCache.teaches, this.props.data.createStudentAttendanceCache.attendanceMasters, studentFilterData.subject.id, studentFilterData.batch.id, studentFilterData.section.id)}
                     </select>
                   </td>
                   <td>
