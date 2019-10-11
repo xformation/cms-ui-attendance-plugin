@@ -338,9 +338,9 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
       }
 
       e.target.querySelector("#term").setAttribute("disabled", true);
-      e.target.querySelector("#department").setAttribute("disabled", true);
+      // e.target.querySelector("#department").setAttribute("disabled", true);
       e.target.querySelector("#batch").setAttribute("disabled", true);
-      e.target.querySelector("#semester").setAttribute("disabled", true);
+      // e.target.querySelector("#semester").setAttribute("disabled", true);
       e.target.querySelector("#subject").setAttribute("disabled", true);
       e.target.querySelector("#section").setAttribute("disabled", true);
       e.target.querySelector("#lecture").setAttribute("disabled", true);
@@ -382,12 +382,12 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
         btn.removeAttribute("disabled");
         let optTr: any = document.querySelector("#term");
         optTr.removeAttribute("disabled");
-        let optDt: any = document.querySelector("#department");
-        optDt.removeAttribute("disabled");
+        // let optDt: any = document.querySelector("#department");
+        // optDt.removeAttribute("disabled");
         let optBt: any = document.querySelector("#batch");
         optBt.removeAttribute("disabled");
-        let optSm: any = document.querySelector("#semester");
-        optSm.removeAttribute("disabled");
+        // let optSm: any = document.querySelector("#semester");
+        // optSm.removeAttribute("disabled");
         let optSb: any = document.querySelector("#subject");
         optSb.removeAttribute("disabled");
         let optSc: any = document.querySelector("#section");
@@ -399,12 +399,12 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
         btn.removeAttribute("disabled");
         let optTr: any = document.querySelector("#term");
         optTr.removeAttribute("disabled");
-        let optDt: any = document.querySelector("#department");
-        optDt.removeAttribute("disabled");
+        // let optDt: any = document.querySelector("#department");
+        // optDt.removeAttribute("disabled");
         let optBt: any = document.querySelector("#batch");
         optBt.removeAttribute("disabled");
-        let optSm: any = document.querySelector("#semester");
-        optSm.removeAttribute("disabled");
+        // let optSm: any = document.querySelector("#semester");
+        // optSm.removeAttribute("disabled");
         let optSb: any = document.querySelector("#subject");
         optSb.removeAttribute("disabled");
         let optSc: any = document.querySelector("#section");
