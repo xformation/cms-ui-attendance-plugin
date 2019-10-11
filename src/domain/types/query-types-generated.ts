@@ -213,6 +213,34 @@ export type LoadStudentAtndQuery = {
       strLecDate: string;
       attendancemaster: {
         id: number;
+        batch: {
+          id: number;
+          batch: string;
+        };
+        section: {
+          id: number;
+          section: string;
+        };
+        teach: {
+          id: number;
+          subject: {
+            id: number;
+            subjectType: string;
+            subjectCode: string;
+            subjectDesc: string;
+            department: {
+              id: number;
+            };
+            batch: {
+              id: number;
+              batch: string;
+            };
+          };
+          teacher: {
+            id: number;
+            teacherName: string;
+          };
+        };
       };
     }>;
   };
@@ -283,6 +311,34 @@ export type LoadStudentAtndQueryCacheForAdmin = {
       strLecDate: string;
       attendancemaster: {
         id: number;
+        batch: {
+          id: number;
+          batch: string;
+        };
+        section: {
+          id: number;
+          section: string;
+        };
+        teach: {
+          id: number;
+          subject: {
+            id: number;
+            subjectType: string;
+            subjectCode: string;
+            subjectDesc: string;
+            department: {
+              id: number;
+            };
+            batch: {
+              id: number;
+              batch: string;
+            };
+          };
+          teacher: {
+            id: number;
+            teacherName: string;
+          };
+        };
       };
     }>;
   };

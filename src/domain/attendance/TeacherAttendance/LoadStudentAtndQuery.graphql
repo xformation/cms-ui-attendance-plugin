@@ -69,7 +69,35 @@ query createStudentAttendanceCache($branchId:String, $academicYearId:String, $te
       endTime,
       strLecDate,
       attendancemaster{
-        id
+        id,
+        batch{
+          id,
+          batch
+        },
+        section{
+          id,
+          section
+        },
+        teach{
+          id,
+          subject{
+            id,
+            subjectType,
+            subjectCode,
+            subjectDesc,
+            department{
+              id
+            },
+            batch{
+              id,
+              batch
+            }
+          },
+          teacher{
+            id,
+            teacherName
+          }
+        }
       }
     }
   }

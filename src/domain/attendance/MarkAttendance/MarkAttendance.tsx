@@ -11,7 +11,6 @@ import {
   UpdateStudentAttendanceMutation
 } from '../../types';
 import withStudentAtndDataLoader from "./withStudentAtndDataLoader";
-import { constants } from '../../../constants';
 
 interface type {
   checked: boolean;
@@ -56,7 +55,7 @@ type StudentAttendanceState = {
   academicYears: any,
   departments: any,
   batches: any,
-  semesters: any,
+  // semesters: any,
   subjects: any,
   sections: any,
   lectures: any,
@@ -96,9 +95,9 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
         batch: {
           id: ""
         },
-        semester: {
-          id: ""
-        },
+        // semester: {
+        //   id: ""
+        // },
         subject: {
           id: ""
         },
@@ -127,7 +126,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
       academicYears: [],
       departments: [],
       batches: [],
-      semesters: [],
+      // semesters: [],
       subjects: [],
       sections: [],
       lectures: [],
@@ -141,7 +140,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
 
     // this.createDepartments = this.createDepartments.bind(this);
     this.createBatches = this.createBatches.bind(this);
-    this.createSemesters = this.createSemesters.bind(this);
+    // this.createSemesters = this.createSemesters.bind(this);
     this.createSubjects = this.createSubjects.bind(this);
     this.createSections = this.createSections.bind(this);
     this.createLectures = this.createLectures.bind(this);
@@ -197,16 +196,16 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     }
     return subjectsOptions;
   }
-  createSemesters(semesters: any) {
-    let semestersOptions = [<option key={0} value="">Select Semester</option>];
-    for (let i = 0; i < semesters.length; i++) {
-      let id = semesters[i].id;
-      semestersOptions.push(
-        <option key={id} value={id}>{semesters[i].description}</option>
-      );
-    }
-    return semestersOptions;
-  }
+  // createSemesters(semesters: any) {
+  //   let semestersOptions = [<option key={0} value="">Select Semester</option>];
+  //   for (let i = 0; i < semesters.length; i++) {
+  //     let id = semesters[i].id;
+  //     semestersOptions.push(
+  //       <option key={id} value={id}>{semesters[i].description}</option>
+  //     );
+  //   }
+  //   return semestersOptions;
+  // }
   createSections(sections: any, selectedBatchId: any) {
     let sectionsOptions = [<option key={0} value="">Select Section</option>];
     for (let i = 0; i < sections.length; i++) {
@@ -221,48 +220,83 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
     return sectionsOptions;
   }
 
-  createLectures(lectures: any, attendanceMasters: any, subjectId: any, selectedBatchId: any, selectedSectionId: any, changedDate: any) {
-    let amId = "";
-    for (let a = 0; a < attendanceMasters.length; a++) {
-      let atndBthId = "" + attendanceMasters[a].batch.id;
-      let atndSecId = "" + attendanceMasters[a].section.id;
-      if (selectedBatchId === atndBthId && selectedSectionId === atndSecId) {
-        amId = attendanceMasters[a].id;
-        break;
-      }
-    }
-    // var curDate = moment(new Date()).format("DD-MM-YYYY");
+  createLectures(lectures: any, attendanceMasters: any, selectedBatchId: any, selectedSectionId: any, changedDate: any) {
     let subObj: any = document.querySelector("#subject");
-    // let dtPk: any = document.querySelector("#dtPicker");
     var curDate = moment(new Date(), "DD-MM-YYYY");
-
-    // if(dtPk !== null){
-    //   // curDate = dtPk.value;
-    //   var ary = dtPk.value.split("/");
-    //   var tmpDt = ary[0] + "-" + ary[1] + "-" + ary[2];
-    //   curDate = moment(tmpDt, "DD-MM-YYYY");
-    // }
 
     if (changedDate !== null) {
       var tmpDt = moment(changedDate).format("DD-MM-YYYY");
       curDate = moment(tmpDt, "DD-MM-YYYY");
     }
-    // curDate = curDate.replaceAll("/", "-");
     let lecturesOptions = [<option key={0} value="">Select Lecture</option>];
     for (let i = 0; i < lectures.length; i++) {
       let id = lectures[i].id;
-      // var lcdt = new DatePickerComponent(lectures[i].strLecDate);
-      let lecAtndMsId = lectures[i].attendancemaster.id;
       let lcDt = moment(lectures[i].strLecDate, "DD-MM-YYYY")
-      if (lcDt.isSame(curDate) && lecAtndMsId === amId) { //lcDt.isSame(curDate)
-        lecturesOptions.push(
-          <option key={id} value={id}>{subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} - {lectures[i].endTime}</option>
-        );
+      let amBthId = ""+lectures[i].attendancemaster.batch.id;
+      if (lcDt.isSame(curDate) && amBthId === selectedBatchId && subObj.options[subObj.selectedIndex].text === lectures[i].attendancemaster.teach.subject.subjectDesc) {
+        let amSecId = lectures[i].attendancemaster.section !== null ? ""+lectures[i].attendancemaster.section.id : "";
+        
+        if(selectedSectionId !==""){
+          if(amSecId === selectedSectionId){
+            lecturesOptions.push(
+              <option key={id} value={id}>{subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} - {lectures[i].endTime}</option>
+            );
+          }
+        }else{
+          lecturesOptions.push(
+            <option key={id} value={id}>{subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} - {lectures[i].endTime}</option>
+          );
+        } 
+        
       }
     }
 
     return lecturesOptions;
   }
+
+  // createLectures(lectures: any, attendanceMasters: any, selectedBatchId: any, selectedSectionId: any, changedDate: any) {
+  //   let amId = "";
+  //   for (let a = 0; a < attendanceMasters.length; a++) {
+  //     let atndBthId = "" + attendanceMasters[a].batch.id;
+  //     let atndSecId = "" + attendanceMasters[a].section.id;
+
+  //     if (selectedBatchId === atndBthId && selectedSectionId === atndSecId) {
+  //       amId = attendanceMasters[a].id;
+  //       break;
+  //     }
+  //   }
+  //   // var curDate = moment(new Date()).format("DD-MM-YYYY");
+  //   let subObj: any = document.querySelector("#subject");
+  //   // let dtPk: any = document.querySelector("#dtPicker");
+  //   var curDate = moment(new Date(), "DD-MM-YYYY");
+
+  //   // if(dtPk !== null){
+  //   //   // curDate = dtPk.value;
+  //   //   var ary = dtPk.value.split("/");
+  //   //   var tmpDt = ary[0] + "-" + ary[1] + "-" + ary[2];
+  //   //   curDate = moment(tmpDt, "DD-MM-YYYY");
+  //   // }
+
+  //   if (changedDate !== null) {
+  //     var tmpDt = moment(changedDate).format("DD-MM-YYYY");
+  //     curDate = moment(tmpDt, "DD-MM-YYYY");
+  //   }
+  //   // curDate = curDate.replaceAll("/", "-");
+  //   let lecturesOptions = [<option key={0} value="">Select Lecture</option>];
+  //   for (let i = 0; i < lectures.length; i++) {
+  //     let id = lectures[i].id;
+  //     // var lcdt = new DatePickerComponent(lectures[i].strLecDate);
+  //     let lecAtndMsId = lectures[i].attendancemaster.id;
+  //     let lcDt = moment(lectures[i].strLecDate, "DD-MM-YYYY")
+  //     if (lcDt.isSame(curDate) && lecAtndMsId === amId) { //lcDt.isSame(curDate)
+  //       lecturesOptions.push(
+  //         <option key={id} value={id}>{subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} - {lectures[i].endTime}</option>
+  //       );
+  //     }
+  //   }
+
+  //   return lecturesOptions;
+  // }
 
   // isCorrectDate(strDate: any){
   //   var regex = /^(((0[1-9]|[12]\d|3[01])\/(0[13578]|1[02])\/((19|[2-9]\d)\d{2}))|((0[1-9]|[12]\d|30)\/(0[13456789]|1[012])\/((19|[2-9]\d)\d{2}))|((0[1-9]|1\d|2[0-8])\/02\/((19|[2-9]\d)\d{2}))|(29\/02\/((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))))$/g;
@@ -587,7 +621,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
       startDate: varDt
     });
 
-    this.createLectures(this.props.data.createStudentAttendanceCacheForAdmin.lectures, this.props.data.createStudentAttendanceCacheForAdmin.attendanceMasters, studentFilterData.subject.id, studentFilterData.batch.id, studentFilterData.section.id, varDt);
+    this.createLectures(this.props.data.createStudentAttendanceCacheForAdmin.lectures, this.props.data.createStudentAttendanceCacheForAdmin.attendanceMasters, studentFilterData.batch.id, studentFilterData.section.id, varDt);
   }
 
   createGrid(ary: any) {
@@ -664,7 +698,8 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
   }
   render() {
     const { data: { createStudentAttendanceCacheForAdmin, refetch }, mutate, mutateUpd, history, match } = this.props;
-    const { studentFilterData, departments, batches, semesters, subjects, sections, lectures, terms, attendanceMasters, submitted } = this.state;
+    // const { studentFilterData, departments, batches, semesters, subjects, sections, lectures, terms, attendanceMasters, submitted } = this.state;
+    const { studentFilterData, departments, batches, subjects, sections, lectures, terms, attendanceMasters, submitted } = this.state;
 
     return (
       <section className="plugin-bg-white">
@@ -680,7 +715,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
                   <th>Term</th>
                   {/* <th>Department</th> */}
                   <th>Year</th>
-                  <th>Semester</th>
+                  {/* <th>Semester</th> */}
                   <th>Subject</th>
                   <th>Section</th>
                   <th>Lectures</th>
@@ -705,24 +740,24 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
                       {this.createBatches(this.props.data.createStudentAttendanceCacheForAdmin.batches, studentFilterData.department.id)}
                     </select>
                   </td>
-                  <td>
+                  {/* <td>
                     <select required name="semester" id="semester" onChange={this.onChange} value={studentFilterData.semester.id} className="gf-form-input max-width-22">
                       {this.createSemesters(this.props.data.createStudentAttendanceCacheForAdmin.semesters)}
                     </select>
-                  </td>
+                  </td> */}
                   <td>
                     <select required name="subject" id="subject" onChange={this.onChange} value={studentFilterData.subject.id} className="gf-form-input max-width-22">
                       {this.createSubjects(this.props.data.createStudentAttendanceCacheForAdmin.subjects, studentFilterData.department.id, studentFilterData.batch.id)}
                     </select>
                   </td>
                   <td>
-                    <select required name="section" id="section" onChange={this.onChange} value={studentFilterData.section.id} className="gf-form-input max-width-22">
+                    <select name="section" id="section" onChange={this.onChange} value={studentFilterData.section.id} className="gf-form-input max-width-22">
                       {this.createSections(this.props.data.createStudentAttendanceCacheForAdmin.sections, studentFilterData.batch.id)}
                     </select>
                   </td>
                   <td>
                     <select required name="lecture" id="lecture" onChange={this.onChange} value={studentFilterData.lecture.id} className="gf-form-input max-width-22">
-                      {this.createLectures(this.props.data.createStudentAttendanceCacheForAdmin.lectures, this.props.data.createStudentAttendanceCacheForAdmin.attendanceMasters, studentFilterData.subject.id, studentFilterData.batch.id, studentFilterData.section.id, this.state.startDate)}
+                      {this.createLectures(this.props.data.createStudentAttendanceCacheForAdmin.lectures, this.props.data.createStudentAttendanceCacheForAdmin.attendanceMasters, studentFilterData.batch.id, studentFilterData.section.id, this.state.startDate)}
                     </select>
                   </td>
                   <td>

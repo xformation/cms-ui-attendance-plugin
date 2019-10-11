@@ -20,10 +20,10 @@ const params = new URLSearchParams(location.search);
 let ayId = params.get('ayid') ;
 let bId = params.get('bid') ;
 
-if(ayId === null || ayId === undefined) {
+if(ayId == null || ayId == undefined) {
   ayId = "0";
 }  
-if(bId === null || bId === undefined) {
+if(bId == null || bId == undefined) {
   bId = "0";
 }
 console.log("Academic year id from URL : ",ayId); 
