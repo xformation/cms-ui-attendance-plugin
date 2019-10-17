@@ -222,7 +222,9 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
 
   createLectures(lectures: any, attendanceMasters: any, selectedBatchId: any, selectedSectionId: any, changedDate: any) {
     let subObj: any = document.querySelector("#subject");
-    var curDate = moment(new Date(), "DD-MM-YYYY");
+    var curDateS = moment(new Date()).format("DD-MM-YYYY");
+    var curDate = moment(curDateS, "DD-MM-YYYY");
+    // var curDate = moment(new Date(), "DD-MM-YYYY");
 
     if (changedDate !== null) {
       var tmpDt = moment(changedDate).format("DD-MM-YYYY");
@@ -236,13 +238,14 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
       if (lcDt.isSame(curDate) && amBthId === selectedBatchId && subObj.options[subObj.selectedIndex].text === lectures[i].attendancemaster.teach.subject.subjectDesc) {
         let amSecId = lectures[i].attendancemaster.section !== null ? ""+lectures[i].attendancemaster.section.id : "";
         
-        if(selectedSectionId !==""){
+        if(amSecId !==""){
           if(amSecId === selectedSectionId){
             lecturesOptions.push(
               <option key={id} value={id}>{subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} - {lectures[i].endTime}</option>
             );
           }
-        }else{
+        }
+        else{
           lecturesOptions.push(
             <option key={id} value={id}>{subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} - {lectures[i].endTime}</option>
           );
@@ -367,6 +370,7 @@ class MarkAttendance extends React.Component<StudentAttendancePageProps, Student
       btn.setAttribute("disabled", true);
       // let dataSavedMessage: any = document.querySelector(".data-saved-message");
       // dataSavedMessage.style.display = "none";
+      console.log("calling mutation to get attendance data :::::: ");
       return mutate({
         variables: { filter: studentFilterInputData },
       }).then(data => {
