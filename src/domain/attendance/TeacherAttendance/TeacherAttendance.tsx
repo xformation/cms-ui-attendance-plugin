@@ -10,31 +10,31 @@ import * as StudentAttendanceUpdateMutationGql from './StudentAttendanceUpdateMu
 import { RouteComponentProps } from 'react-router-dom';
 import { graphql, QueryProps, MutationFunc, compose } from "react-apollo";
 import {
-  LoadStudentAtndQuery,
-  // ReactFunctionOrComponentClass,
-  DailyStudentAttendanceListQuery,
-  UpdateStudentAttendanceMutation
-} from '../../types';
-import withStudentAtndDataLoader from "./withStudentAtndDataLoader";
+  CREATE_STU_CACHE,
+  GET_DAILY_ATTEN,
+  GET_STU_DATA
+} from '../_queries';
+import withLoadingHandler from '../withLoadingHandler';
+// import withStudentAtndDataLoader from "./withStudentAtndDataLoader";
 // import { constants } from '../../../constants'
 
 // type StudentAttendanceRootProps = {
 //   data: QueryProps & LoadStudentAtndQuery;
 // }
 
-type StudentAttendanceRootProps = RouteComponentProps<{
-  branchId: string;
-  academicYearId: string;
-  teacherId: string;
-  lectureDate: string;
-}> & {
-  data: QueryProps & LoadStudentAtndQuery;
-}
+// type StudentAttendanceRootProps = RouteComponentProps<{
+//   branchId: string;
+//   academicYearId: string;
+//   teacherId: string;
+//   lectureDate: string;
+// }> & {
+//   data: QueryProps & LoadStudentAtndQuery;
+// }
 
-type StudentAttendancePageProps = StudentAttendanceRootProps & {
-  mutate: MutationFunc<DailyStudentAttendanceListQuery>;
-  mutateUpd: MutationFunc<UpdateStudentAttendanceMutation>;
-};
+// type StudentAttendancePageProps = StudentAttendanceRootProps & {
+//   getDailyStudentAttendanceData: MutationFunc<DailyStudentAttendanceListQuery>;
+//   getDailyStudentAttendanceData: MutationFunc<UpdateStudentAttendanceMutation>;
+// };
 
 type StudentAttendanceState = {
   studentFilterData: any,
@@ -63,8 +63,8 @@ class SaData {
 }
 
 
-class TeacherAttendance extends React.Component<StudentAttendancePageProps, StudentAttendanceState>{
-  constructor(props: StudentAttendancePageProps) {
+class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
+  constructor(props: any) {
     super(props);
     const params = new URLSearchParams(location.search);
     this.state = {
@@ -296,7 +296,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
       btn.setAttribute("disabled", true);
       return mutate({
         variables: { filter: studentFilterInputData },
-      }).then(data => {
+      }).then((data: any) => {
         const sdt = data;
         studentFilterData.mutateResult = [];
         studentFilterData.mutateResult.push(sdt);
@@ -474,7 +474,7 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
     btn.setAttribute("disabled", true);
     return mutateUpd({
       variables: { input: studentFilterData.payLoad },
-    }).then(data => {
+    }).then((data: any) => {
       btn.removeAttribute("disabled");
       console.log('Update Result: ', data.data.updateStudentAttendanceData.statusDesc);
       alert(data.data.updateStudentAttendanceData.statusDesc);
@@ -719,17 +719,21 @@ class TeacherAttendance extends React.Component<StudentAttendancePageProps, Stud
   }
 }
 
-export default withStudentAtndDataLoader(
-
-  compose(
-    graphql<DailyStudentAttendanceListQuery, StudentAttendanceRootProps>(StudentAttendanceFilterQueryGql, {
-      name: "mutate"
-    }),
-    graphql<UpdateStudentAttendanceMutation, StudentAttendanceRootProps>(StudentAttendanceUpdateMutationGql, {
-      name: "mutateUpd",
-    }),
-
-  )
-
+  export default graphql(CREATE_STU_CACHE, {
+    options: ({ }) => ({
+      variables: {
+        branchId: 1851,
+        academicYearId: 1701,
+        lectureDate: moment(new Date()).format("DD-MM-YYYY"),
+        teacherId: 2151
+      }
+    })
+  }) (withLoadingHandler(
+  
+    compose(
+      graphql(GET_DAILY_ATTEN, { name: "getStudentAttendanceDataForAdmin" }),
+      graphql(GET_STU_DATA, { name: "updateStudentAttendanceData" }),
+    )
     (TeacherAttendance) as any
+  )
 );
