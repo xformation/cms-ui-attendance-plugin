@@ -35,7 +35,7 @@ export default class AttendancesTab extends React.Component<any, any> {
           <h5 className="p-1">Attendance</h5>
         </div>
         <Nav tabs className="pl-3 pl-3 mb-4 mt-4 boxShadow">
-          {/* <NavItem className="cursor-pointer">
+          <NavItem className="cursor-pointer">
             <NavLink
               className={`${activeTab === 0 ? 'active' : ''}`}
               onClick={() => {
@@ -44,7 +44,7 @@ export default class AttendancesTab extends React.Component<any, any> {
             >
               AttendanceOverview
             </NavLink>
-          </NavItem> */}
+          </NavItem>
           <NavItem className="cursor-pointer">
             <NavLink
               className={`${activeTab === 1 ? 'active' : ''}`}
@@ -65,7 +65,7 @@ export default class AttendancesTab extends React.Component<any, any> {
               TeacherAttendance
             </NavLink>
           </NavItem>
-          {/* <NavItem className="cursor-pointer">
+          <NavItem className="cursor-pointer">
             <NavLink
               className={`${activeTab === 3 ? 'active' : ''}`}
               onClick={() => {
@@ -74,21 +74,21 @@ export default class AttendancesTab extends React.Component<any, any> {
             >
               TeacherMarkAttendance
             </NavLink>
-          </NavItem> */}
+          </NavItem>
         </Nav>
         <TabContent activeTab={activeTab} className="border-right">
-          {/* <TabPane tabId={0}>
+          <TabPane tabId={0}>
             <AttendanceOverview />
-          </TabPane> */}
+          </TabPane>
           <TabPane tabId={1}>
           <MarkAttendance />
           </TabPane>
           <TabPane tabId={2}>
             <TeacherAttendance />
           </TabPane>
-          {/* <TabPane tabId={3}>
+          <TabPane tabId={3}>
             <TeacherMarkAttendance />
-          </TabPane> */}
+          </TabPane>
         </TabContent>
       </section>
     );
