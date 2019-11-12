@@ -1,6 +1,0 @@
-# import "./studentattendance.graphql"
-
-
-fragment studentAttendanceDetails on StudentAttendance {
-  ...studentattendance
-}
