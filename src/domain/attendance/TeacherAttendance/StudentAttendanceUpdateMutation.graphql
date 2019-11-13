@@ -1,0 +1,11 @@
+
+mutation updateStudentAttendanceData($input: [StudentAttendanceUpdateFilter!]!){
+  updateStudentAttendanceData(input:$input){
+    statusCode
+    statusDesc
+ }
+}
+
+
+
+

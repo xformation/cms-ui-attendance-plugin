@@ -1,0 +1,11 @@
+mutation getDailyStudentAttendanceData($filter:StudentAttendanceFilterInput!) {
+  getDailyStudentAttendanceData(filter: $filter) {
+    studentId
+    studentName
+    currentDateStatus
+    previousOneDayStatus
+    previousTwoDayStatus
+    previousThreeDayStatus
+    comments
+ }
+}

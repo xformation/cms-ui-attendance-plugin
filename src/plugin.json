@@ -23,10 +23,38 @@
   "includes": [
     {
       "type": "page",
-      "name": "AttendanceOverviewTab",
+      "name": "Home",
+      "addToNav": false,
+      "defaultNav": false,
+      "component": "WelcomePage"
+    },
+    {
+      "type": "page",
+      "name": "MarkAttendance",
+      "addToNav": false,
+      "defaultNav": false,
+      "component": "AttendanceOverview"
+    },
+    {
+      "type": "page",
+      "name": "AdminAttendance",
+      "addToNav": true,
+      "defaultNav": true,
+      "component": "MarkAttendance"
+    },
+    {
+      "type": "page",
+      "name": "TeacherAttendance",
       "addToNav": true,
       "defaultNav": false,
-      "component": "AttendanceOverviewTab"
+      "component": "TeacherAttendance"
+    },
+    {
+      "type": "page",
+      "name": "TeacherMarkAttendance",
+      "addToNav": false,
+      "defaultNav": false,
+      "component": "TeacherMarkAttendance"
     }
   ],
   "dependencies": {
