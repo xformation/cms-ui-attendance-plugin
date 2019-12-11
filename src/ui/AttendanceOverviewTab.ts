@@ -1,4 +1,4 @@
-import init from '../domain/attendance/AttendanceTab/AttendanceTabApp';
+import init from '../domain/attendance/AttendanceTabApp';
 
 export class AttendanceOverviewTab {
   static templateUrl = '/partials/attendanceoverviewtab.html';

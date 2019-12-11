@@ -104,7 +104,7 @@ const TeacherMarkAttendance = () => (
           <th>18\11\2018</th>
           <th>17\11\2018</th>
           <th>16\11\2018</th>
-          <th>Comments</th>
+          <th>Comments</th> 
         </thead>
         <tbody>
           <tr>

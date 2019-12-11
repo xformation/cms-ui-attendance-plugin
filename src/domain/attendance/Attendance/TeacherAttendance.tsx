@@ -37,7 +37,7 @@ import withLoadingHandler from '../withLoadingHandler';
 // };
 
 type StudentAttendanceState = {
-  studentFilterData: any,
+  studentFilterData: any, 
   branches: any,
   academicYears: any,
   teachers: any,

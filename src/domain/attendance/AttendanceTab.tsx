@@ -1,13 +1,8 @@
 import * as React from 'react';
 // import { graphql, QueryProps, MutationFunc, compose } from 'react-apollo';
 import { TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
-import AttendanceOverview from '../AttendanceOverview/AttendanceOverview';
-import MarkAttendance from '../MarkAttendance/MarkAttendance';
-import TeacherAttendance from '../TeacherAttendance/TeacherAttendance';
-import UpdateStudentAttendance from '../TeacherAttendance/UpdateStudentAttendance';
-import TeacherMarkAttendance from '../TeacherMarkAttendance/TeacherMarkAttendance';
+import Attendance from './Attendance';
 import { FaUserGraduate } from 'react-icons/fa';
-import './tabs.css';
 
 
 export default class AttendancesTab extends React.Component<any, any> {
@@ -48,16 +43,16 @@ export default class AttendancesTab extends React.Component<any, any> {
           </NavItem> */}
           <NavItem className="cursor-pointer">
             <NavLink
-              className={`${activeTab === 1 ? 'active' : ''}`}
+              className={`${activeTab === 0 ? 'active' : ''}`}
               onClick={() => {
-                this.toggleTab(1);
+                this.toggleTab(0);
               }}
             >
-              AttendanceOverview
+              Attendance
               {/* MarkAttendance */}
             </NavLink>
           </NavItem>
-          <NavItem className="cursor-pointer">
+          {/* <NavItem className="cursor-pointer">
             <NavLink
               className={`${activeTab === 2 ? 'active' : ''}`}
               onClick={() => {
@@ -66,7 +61,7 @@ export default class AttendancesTab extends React.Component<any, any> {
             >
               TeacherAttendance
             </NavLink>
-          </NavItem>
+          </NavItem> */}
           {/* <NavItem className="cursor-pointer">
             <NavLink
               className={`${activeTab === 3 ? 'active' : ''}`}
@@ -82,12 +77,12 @@ export default class AttendancesTab extends React.Component<any, any> {
           {/* <TabPane tabId={0}>
             <AttendanceOverview />
           </TabPane> */}
-          <TabPane tabId={1}>
-          <MarkAttendance />
+          <TabPane tabId={0}>
+          <Attendance />
           </TabPane>
-          <TabPane tabId={2}>
+          {/* <TabPane tabId={2}>
             <TeacherAttendance />
-          </TabPane>
+          </TabPane> */}
           {/* <TabPane tabId={3}>
             <TeacherMarkAttendance />
           </TabPane> */}
