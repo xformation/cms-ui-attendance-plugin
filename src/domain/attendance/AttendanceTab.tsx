@@ -1,9 +1,9 @@
 import * as React from 'react';
 // import { graphql, QueryProps, MutationFunc, compose } from 'react-apollo';
-import { TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
+import {TabContent, TabPane, Nav, NavItem, NavLink} from 'reactstrap';
 import Attendance from './Attendance';
-import { FaUserGraduate } from 'react-icons/fa';
-
+import {FaUserGraduate} from 'react-icons/fa';
+import 'react-datepicker/dist/react-datepicker.css';
 
 export default class AttendancesTab extends React.Component<any, any> {
   constructor(props: any) {
@@ -21,12 +21,14 @@ export default class AttendancesTab extends React.Component<any, any> {
   }
 
   render() {
-    const { activeTab } = this.state;
+    const {activeTab} = this.state;
     return (
       <section className="tab-container">
-        <div className="tab-flex p-1">
+        <div className="d-flex p-1">
           {/* <img src="../../img/students.png" alt="" /> */}
-          <h5><FaUserGraduate className="m-1 fa-2x" /></h5>
+          <h5>
+            <FaUserGraduate className="m-1 fa-2x" />
+          </h5>
           <h5 className="p-1">Attendance</h5>
         </div>
         <Nav tabs className="pl-3 pl-3 mb-4 mt-4 boxShadow">
@@ -78,7 +80,7 @@ export default class AttendancesTab extends React.Component<any, any> {
             <AttendanceOverview />
           </TabPane> */}
           <TabPane tabId={0}>
-          <Attendance />
+            <Attendance />
           </TabPane>
           {/* <TabPane tabId={2}>
             <TeacherAttendance />

@@ -3,12 +3,11 @@ import * as moment from 'moment';
 import * as React from 'react';
 import * as StudentAttendanceFilterQueryGql from './StudentAttendanceFilterQuery.graphql';
 import * as StudentAttendanceUpdateMutationGql from './StudentAttendanceUpdateMutation.graphql';
-import { RouteComponentProps } from 'react-router-dom';
-import { graphql, QueryProps, MutationFunc, compose } from "react-apollo";
+import {RouteComponentProps} from 'react-router-dom';
+import {graphql, QueryProps, MutationFunc, compose} from 'react-apollo';
 import withLoadingHandler from '../withLoadingHandler';
-import {
-  CRET_STU_ATD_CAC_ADM,GET_STU_ATTE_DATA,UPD_STU_ATTE_DATA 
-} from '../_queries';
+import {CRET_STU_ATD_CAC_ADM, GET_STU_ATTE_DATA, UPD_STU_ATTE_DATA} from '../_queries';
+
 //import withStudentAtndDataLoader from "./withStudentAtndDataLoader";
 
 interface type {
@@ -19,19 +18,27 @@ class DatePickerComponent extends React.Component<any, any> {
   constructor(props: any) {
     super(props);
     this.state = {
-      startDate: moment()
+      startDate: moment(),
     };
     this.handleChange = this.handleChange.bind(this);
   }
 
   handleChange(date: any) {
     this.setState({
-      startDate: date
+      startDate: date,
     });
   }
 
   render() {
-    return <DatePicker selected={this.state.startDate} value={this.state.startDate} onChange={this.handleChange} id="dtPicker" name="dtPicker" />;
+    return (
+      <DatePicker
+        selected={this.state.startDate}
+        value={this.state.startDate}
+        onChange={this.handleChange}
+        id="dtPicker"
+        name="dtPicker"
+      />
+    );
   }
 }
 
@@ -49,22 +56,22 @@ class DatePickerComponent extends React.Component<any, any> {
 // };
 
 type StudentAttendanceState = {
-  studentFilterData: any,
-  branches: any,
-  academicYears: any,
-  departments: any,
-  batches: any,
+  studentFilterData: any;
+  branches: any;
+  academicYears: any;
+  departments: any;
+  batches: any;
   // semesters: any,
-  subjects: any,
-  sections: any,
-  lectures: any,
-  dtPicker: any,
-  terms: any,
-  attendanceMasters: any,
-  submitted: any,
-  startDate: any,
-  searchKey: any,
-  sortBy: any
+  subjects: any;
+  sections: any;
+  lectures: any;
+  dtPicker: any;
+  terms: any;
+  attendanceMasters: any;
+  submitted: any;
+  startDate: any;
+  searchKey: any;
+  sortBy: any;
 };
 
 class SaData {
@@ -76,51 +83,51 @@ class SaData {
   }
 }
 
-class MarkAttendance extends React.Component<any, StudentAttendanceState>{
+class MarkAttendance extends React.Component<any, StudentAttendanceState> {
   constructor(props: any) {
     super(props);
     const params = new URLSearchParams(location.search);
     this.state = {
       studentFilterData: {
         branch: {
-          id: params.get('bid') 
+          id: params.get('bid'),
         },
         academicYear: {
-          id: params.get('ayid') 
+          id: params.get('ayid'),
         },
         department: {
-          id: params.get('dptid')
+          id: params.get('dptid'),
         },
         batch: {
-          id: ""
+          id: '',
         },
         // semester: {
         //   id: ""
         // },
         subject: {
-          id: ""
+          id: '',
         },
         section: {
-          id: ""
+          id: '',
         },
         lecture: {
-          id: ""
+          id: '',
         },
         term: {
-          id: ""
+          id: '',
         },
         attendanceMaster: {
-          id: ""
+          id: '',
         },
         mutateResult: [],
         filtered: [],
-        selectedIds: "",
+        selectedIds: '',
         payLoad: [],
         textValueMap: {},
-        txtCmtVal: {}
+        txtCmtVal: {},
       },
-      searchKey: "",
-      sortBy: "",
+      searchKey: '',
+      sortBy: '',
       branches: [],
       academicYears: [],
       departments: [],
@@ -133,8 +140,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
       terms: [],
       attendanceMasters: [],
       submitted: false,
-      startDate: moment()
-
+      startDate: moment(),
     };
 
     // this.createDepartments = this.createDepartments.bind(this);
@@ -148,13 +154,19 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
     this.changeDate = this.changeDate.bind(this);
     this.createGrid = this.createGrid.bind(this);
   }
-  
+
   createTerms(terms: any) {
-    let termsOptions = [<option key={0} value="">Select Term</option>];
+    let termsOptions = [
+      <option key={0} value="">
+        Select Term
+      </option>,
+    ];
     for (let i = 0; i < terms.length; i++) {
       let desc = 'From ' + terms[i].strStartDate + ' - To - ' + terms[i].strEndDate;
       termsOptions.push(
-        <option key={terms[i].id} value={terms[i].id}>{desc}</option>
+        <option key={terms[i].id} value={terms[i].id}>
+          {desc}
+        </option>
       );
     }
     return termsOptions;
@@ -171,25 +183,40 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
   // }
 
   createBatches(batches: any, selectedDepartmentId: any) {
-    let batchesOptions = [<option key={0} value="">Select Year</option>];
+    let batchesOptions = [
+      <option key={0} value="">
+        Select Year
+      </option>,
+    ];
     for (let i = 0; i < batches.length; i++) {
       let id = batches[i].id;
-      let dptId = "" + batches[i].department.id;
+      let dptId = '' + batches[i].department.id;
       if (dptId == selectedDepartmentId) {
         batchesOptions.push(
-          <option key={id} value={id}>{batches[i].batch}</option>
+          <option key={id} value={id}>
+            {batches[i].batch}
+          </option>
         );
       }
     }
     return batchesOptions;
   }
   createSubjects(subjects: any, selectedDepartmentId: any, selectedBatchId: any) {
-    let subjectsOptions = [<option key={0} value="">Select Subject</option>];
+    let subjectsOptions = [
+      <option key={0} value="">
+        Select Subject
+      </option>,
+    ];
     for (let i = 0; i < subjects.length; i++) {
       let id = subjects[i].id;
-      if (subjects[i].department.id == selectedDepartmentId && subjects[i].batch.id == selectedBatchId) {
+      if (
+        subjects[i].department.id == selectedDepartmentId &&
+        subjects[i].batch.id == selectedBatchId
+      ) {
         subjectsOptions.push(
-          <option key={id} value={id}>{subjects[i].subjectDesc}</option>
+          <option key={id} value={id}>
+            {subjects[i].subjectDesc}
+          </option>
         );
       }
     }
@@ -206,50 +233,78 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
   //   return semestersOptions;
   // }
   createSections(sections: any, selectedBatchId: any) {
-    let sectionsOptions = [<option key={0} value="">Select Section</option>];
+    let sectionsOptions = [
+      <option key={0} value="">
+        Select Section
+      </option>,
+    ];
     for (let i = 0; i < sections.length; i++) {
       let id = sections[i].id;
-      let sbthId = "" + sections[i].batch.id;
+      let sbthId = '' + sections[i].batch.id;
       if (sbthId == selectedBatchId) {
         sectionsOptions.push(
-          <option key={id} value={id}>{sections[i].section}</option>
+          <option key={id} value={id}>
+            {sections[i].section}
+          </option>
         );
       }
     }
     return sectionsOptions;
   }
 
-  createLectures(lectures: any, attendanceMasters: any, selectedBatchId: any, selectedSectionId: any, changedDate: any) {
-    let subObj: any = document.querySelector("#subject");
-    var curDateS = moment(new Date()).format("DD-MM-YYYY");
-    var curDate = moment(curDateS, "DD-MM-YYYY");
+  createLectures(
+    lectures: any,
+    attendanceMasters: any,
+    selectedBatchId: any,
+    selectedSectionId: any,
+    changedDate: any
+  ) {
+    let subObj: any = document.querySelector('#subject');
+    var curDateS = moment(new Date()).format('DD-MM-YYYY');
+    var curDate = moment(curDateS, 'DD-MM-YYYY');
     // var curDate = moment(new Date(), "DD-MM-YYYY");
 
     if (changedDate !== null) {
-      var tmpDt = moment(changedDate).format("DD-MM-YYYY");
-      curDate = moment(tmpDt, "DD-MM-YYYY");
+      var tmpDt = moment(changedDate).format('DD-MM-YYYY');
+      curDate = moment(tmpDt, 'DD-MM-YYYY');
     }
-    let lecturesOptions = [<option key={0} value="">Select Lecture</option>];
+    let lecturesOptions = [
+      <option key={0} value="">
+        Select Lecture
+      </option>,
+    ];
     for (let i = 0; i < lectures.length; i++) {
       let id = lectures[i].id;
-      let lcDt = moment(lectures[i].strLecDate, "DD-MM-YYYY")
-      let amBthId = ""+lectures[i].attendancemaster.batch.id;
-      if (lcDt.isSame(curDate) && amBthId === selectedBatchId && subObj.options[subObj.selectedIndex].text === lectures[i].attendancemaster.teach.subject.subjectDesc) {
-        let amSecId = lectures[i].attendancemaster.section !== null ? ""+lectures[i].attendancemaster.section.id : "";
-        
-        if(amSecId !==""){
-          if(amSecId === selectedSectionId){
+      let lcDt = moment(lectures[i].strLecDate, 'DD-MM-YYYY');
+      let amBthId = '' + lectures[i].attendancemaster.batch.id;
+      if (
+        lcDt.isSame(curDate) &&
+        amBthId === selectedBatchId &&
+        subObj.options[subObj.selectedIndex].text ===
+          lectures[i].attendancemaster.teach.subject.subjectDesc
+      ) {
+        let amSecId =
+          lectures[i].attendancemaster.section !== null
+            ? '' + lectures[i].attendancemaster.section.id
+            : '';
+
+        if (amSecId !== '') {
+          if (amSecId === selectedSectionId) {
             lecturesOptions.push(
-              <option key={id} value={id}>{subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} - {lectures[i].endTime}</option>
+              <option key={id} value={id}>
+                {subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} -{' '}
+                {lectures[i].endTime}
+              </option>
             );
           }
-        }
-        else{
+        } else {
           lecturesOptions.push(
-            <option key={id} value={id}>{subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} - {lectures[i].endTime}</option>
+            <option key={id} value={id}>
+              {subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} -{' '}
+              {lectures[i].endTime}
+            </option>
           );
-        } 
-        
+        }
       }
     }
 
@@ -307,51 +362,61 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
 
   onFormSubmit = (e: any) => {
     this.setState({
-      submitted: true
+      submitted: true,
     });
 
-    const { mutate } = this.props;
-    const { studentFilterData } = this.state;
+    const {mutate} = this.props;
+    const {studentFilterData} = this.state;
     e.preventDefault();
 
     // if(btn.id === 'btnTakeAtnd'){
-    if (studentFilterData.branch.id && studentFilterData.department.id && studentFilterData.batch.id && studentFilterData.section.id && studentFilterData.lecture.id) {
+    if (
+      studentFilterData.branch.id &&
+      studentFilterData.department.id &&
+      studentFilterData.batch.id &&
+      studentFilterData.section.id &&
+      studentFilterData.lecture.id
+    ) {
       // let myDate:Date = moment(dateString,"YYYY-MM-DD").format("DD-MM-YYYY")
 
-      let dtPk: any = document.querySelector("#dtPicker");
-      let selectedDate = this.state.startDate;//moment(dtPk.value, "DD/MM/YYYY");//.format("DD-MM-YYYY");
-      var tmpDt = moment(selectedDate).format("DD-MM-YYYY");
-      selectedDate = moment(tmpDt, "DD-MM-YYYY");
-      console.log("Date at the time of submission : ", selectedDate);
+      let dtPk: any = document.querySelector('#dtPicker');
+      let selectedDate = this.state.startDate; //moment(dtPk.value, "DD/MM/YYYY");//.format("DD-MM-YYYY");
+      var tmpDt = moment(selectedDate).format('DD-MM-YYYY');
+      selectedDate = moment(tmpDt, 'DD-MM-YYYY');
+      console.log('Date at the time of submission : ', selectedDate);
       let terms = this.props.data.createStudentAttendanceCacheForAdmin.terms;
       for (let i = 0; i < terms.length; i++) {
-        let id = "" + terms[i].id + "";
+        let id = '' + terms[i].id + '';
         if (studentFilterData.term.id === id) {
-          let startDate = moment(terms[i].strStartDate, "DD-MM-YYYY");//.format("DD-MM-YYYY");
-          let todayDate = moment();//.format("DD-MM-YYYY");
+          let startDate = moment(terms[i].strStartDate, 'DD-MM-YYYY'); //.format("DD-MM-YYYY");
+          let todayDate = moment(); //.format("DD-MM-YYYY");
           if (selectedDate.isAfter(todayDate)) {
-            alert("Selected date cannot be a future date. Date is allowed to choose till today.");
+            alert(
+              'Selected date cannot be a future date. Date is allowed to choose till today.'
+            );
             return;
           } else if (selectedDate.isBefore(startDate)) {
-            alert("Selected date cannot be a past date from term start date. History Date is allowed to choose till term start date.");
+            alert(
+              'Selected date cannot be a past date from term start date. History Date is allowed to choose till term start date.'
+            );
             return;
           }
         }
       }
 
-      e.target.querySelector("#term").setAttribute("disabled", true);
+      e.target.querySelector('#term').setAttribute('disabled', true);
       // e.target.querySelector("#department").setAttribute("disabled", true);
-      e.target.querySelector("#batch").setAttribute("disabled", true);
+      e.target.querySelector('#batch').setAttribute('disabled', true);
       // e.target.querySelector("#semester").setAttribute("disabled", true);
-      e.target.querySelector("#subject").setAttribute("disabled", true);
-      e.target.querySelector("#section").setAttribute("disabled", true);
-      e.target.querySelector("#lecture").setAttribute("disabled", true);
+      e.target.querySelector('#subject').setAttribute('disabled', true);
+      e.target.querySelector('#section').setAttribute('disabled', true);
+      e.target.querySelector('#lecture').setAttribute('disabled', true);
 
       // e.target.querySelector("#detailGrid").setAttribute("class", "tflex bg-heading mt-1");
-      e.target.querySelector("#detailGridTable").removeAttribute("class");
+      e.target.querySelector('#detailGridTable').removeAttribute('class');
 
-      dtPk.setAttribute("disabled", true);
-      console.log('date picker value : ', moment(selectedDate).format("DD-MM-YYYY"));
+      dtPk.setAttribute('disabled', true);
+      console.log('date picker value : ', moment(selectedDate).format('DD-MM-YYYY'));
 
       let studentFilterInputData = {
         branchId: studentFilterData.branch.id,
@@ -359,200 +424,203 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
         batchId: studentFilterData.batch.id,
         sectionId: studentFilterData.section.id,
         subjectId: studentFilterData.subject.id,
-        attendanceDate: moment(selectedDate).format("DD-MM-YYYY"),
+        attendanceDate: moment(selectedDate).format('DD-MM-YYYY'),
         lectureId: studentFilterData.lecture.id,
         academicYearId: studentFilterData.academicYear.id,
-        termId: studentFilterData.term.id
+        termId: studentFilterData.term.id,
       };
 
       let btn = e.target.querySelector("button[type='submit']");
-      btn.setAttribute("disabled", true);
+      btn.setAttribute('disabled', true);
       // let dataSavedMessage: any = document.querySelector(".data-saved-message");
       // dataSavedMessage.style.display = "none";
-      console.log("calling mutation to get attendance data :::::: ");
+      console.log('calling mutation to get attendance data :::::: ');
       return mutate({
-        variables: { filter: studentFilterInputData },
-      }).then((data: any) => {
-        const sdt = data;
-        studentFilterData.mutateResult = [];
-        studentFilterData.mutateResult.push(sdt);
-        studentFilterData.filtered.push(sdt);
-        this.setState({
-          studentFilterData: studentFilterData
-        });
-        console.log('Query Result ::::: ', studentFilterData.mutateResult);
+        variables: {filter: studentFilterInputData},
+      })
+        .then((data: any) => {
+          const sdt = data;
+          studentFilterData.mutateResult = [];
+          studentFilterData.mutateResult.push(sdt);
+          studentFilterData.filtered.push(sdt);
+          this.setState({
+            studentFilterData: studentFilterData,
+          });
+          console.log('Query Result ::::: ', studentFilterData.mutateResult);
 
-        btn.removeAttribute("disabled");
-        let optTr: any = document.querySelector("#term");
-        optTr.removeAttribute("disabled");
-        // let optDt: any = document.querySelector("#department");
-        // optDt.removeAttribute("disabled");
-        let optBt: any = document.querySelector("#batch");
-        optBt.removeAttribute("disabled");
-        // let optSm: any = document.querySelector("#semester");
-        // optSm.removeAttribute("disabled");
-        let optSb: any = document.querySelector("#subject");
-        optSb.removeAttribute("disabled");
-        let optSc: any = document.querySelector("#section");
-        optSc.removeAttribute("disabled");
-        let optLc: any = document.querySelector("#lecture");
-        optLc.removeAttribute("disabled");
-        dtPk.removeAttribute("disabled");
-      }).catch((error: any) => {
-        btn.removeAttribute("disabled");
-        let optTr: any = document.querySelector("#term");
-        optTr.removeAttribute("disabled");
-        // let optDt: any = document.querySelector("#department");
-        // optDt.removeAttribute("disabled");
-        let optBt: any = document.querySelector("#batch");
-        optBt.removeAttribute("disabled");
-        // let optSm: any = document.querySelector("#semester");
-        // optSm.removeAttribute("disabled");
-        let optSb: any = document.querySelector("#subject");
-        optSb.removeAttribute("disabled");
-        let optSc: any = document.querySelector("#section");
-        optSc.removeAttribute("disabled");
-        let optLc: any = document.querySelector("#lecture");
-        optLc.removeAttribute("disabled");
-        dtPk.removeAttribute("disabled");
-        console.log('there was an error sending the query result - attendannce for admin role: ', error);
-        return Promise.reject(`Could not retrieve student attendance data for admin: ${error}`);
-      });
+          btn.removeAttribute('disabled');
+          let optTr: any = document.querySelector('#term');
+          optTr.removeAttribute('disabled');
+          // let optDt: any = document.querySelector("#department");
+          // optDt.removeAttribute("disabled");
+          let optBt: any = document.querySelector('#batch');
+          optBt.removeAttribute('disabled');
+          // let optSm: any = document.querySelector("#semester");
+          // optSm.removeAttribute("disabled");
+          let optSb: any = document.querySelector('#subject');
+          optSb.removeAttribute('disabled');
+          let optSc: any = document.querySelector('#section');
+          optSc.removeAttribute('disabled');
+          let optLc: any = document.querySelector('#lecture');
+          optLc.removeAttribute('disabled');
+          dtPk.removeAttribute('disabled');
+        })
+        .catch((error: any) => {
+          btn.removeAttribute('disabled');
+          let optTr: any = document.querySelector('#term');
+          optTr.removeAttribute('disabled');
+          // let optDt: any = document.querySelector("#department");
+          // optDt.removeAttribute("disabled");
+          let optBt: any = document.querySelector('#batch');
+          optBt.removeAttribute('disabled');
+          // let optSm: any = document.querySelector("#semester");
+          // optSm.removeAttribute("disabled");
+          let optSb: any = document.querySelector('#subject');
+          optSb.removeAttribute('disabled');
+          let optSc: any = document.querySelector('#section');
+          optSc.removeAttribute('disabled');
+          let optLc: any = document.querySelector('#lecture');
+          optLc.removeAttribute('disabled');
+          dtPk.removeAttribute('disabled');
+          console.log(
+            'there was an error sending the query result - attendannce for admin role: ',
+            error
+          );
+          return Promise.reject(
+            `Could not retrieve student attendance data for admin: ${error}`
+          );
+        });
     }
     // }
-
-
-  }
+  };
 
   onChange = (e: any) => {
-    const { name, value } = e.nativeEvent.target;
-    const { studentFilterData } = this.state;
-    if (name === "term") {
+    const {name, value} = e.nativeEvent.target;
+    const {studentFilterData} = this.state;
+    if (name === 'term') {
       this.setState({
         studentFilterData: {
           ...studentFilterData,
           term: {
-            id: value
+            id: value,
           },
           // department: {
           //   id: ""
           // },
           batch: {
-            id: ""
+            id: '',
           },
           section: {
-            id: ""
+            id: '',
           },
           semester: {
-            id: ""
-          }
-        }
+            id: '',
+          },
+        },
       });
-    } 
-    // else if (name === "department") {
-    //   this.setState({
-    //     studentFilterData: {
-    //       ...studentFilterData,
-    //       department: {
-    //         id: value
-    //       },
-    //       batch: {
-    //         id: ""
-    //       },
-    //       section: {
-    //         id: ""
-    //       },
-    //       semester: {
-    //         id: ""
-    //       }
-    //     }
-    //   });
-    // } 
-    else if (name === "batch") {
+    } else if (name === 'batch') {
+      // else if (name === "department") {
+      //   this.setState({
+      //     studentFilterData: {
+      //       ...studentFilterData,
+      //       department: {
+      //         id: value
+      //       },
+      //       batch: {
+      //         id: ""
+      //       },
+      //       section: {
+      //         id: ""
+      //       },
+      //       semester: {
+      //         id: ""
+      //       }
+      //     }
+      //   });
+      // }
       this.setState({
         studentFilterData: {
           ...studentFilterData,
           batch: {
-            id: value
+            id: value,
           },
           subject: {
-            id: ""
+            id: '',
           },
           section: {
-            id: ""
+            id: '',
           },
           semester: {
-            id: ""
-          }
-        }
+            id: '',
+          },
+        },
       });
-    } else if (name === "semester") {
+    } else if (name === 'semester') {
       this.setState({
         studentFilterData: {
           ...studentFilterData,
           semester: {
-            id: value
-          }
-        }
+            id: value,
+          },
+        },
       });
-    } else if (name === "subject") {
+    } else if (name === 'subject') {
       this.setState({
         studentFilterData: {
           ...studentFilterData,
           subject: {
-            id: value
+            id: value,
           },
           lecture: {
-            id: ""
-          }
-        }
+            id: '',
+          },
+        },
       });
-    } else if (name === "section") {
+    } else if (name === 'section') {
       this.setState({
         studentFilterData: {
           ...studentFilterData,
           section: {
-            id: value
-          }
-        }
+            id: value,
+          },
+        },
       });
-    } else if (name === "lecture") {
+    } else if (name === 'lecture') {
       this.setState({
         studentFilterData: {
           ...studentFilterData,
           lecture: {
-            id: value
-          }
-        }
+            id: value,
+          },
+        },
       });
-    } else if (name === "searchKey") {
+    } else if (name === 'searchKey') {
       this.setState({
-        "searchKey": value
+        searchKey: value,
       });
-    } else if (name === "sortBy") {
+    } else if (name === 'sortBy') {
       this.setState({
-        "sortBy": value
+        sortBy: value,
       });
     }
-  }
+  };
 
   onClick = (e: any) => {
-
-    const { updateStudentAttendanceData } = this.props;
-    const { studentFilterData } = this.state;
+    const {updateStudentAttendanceData} = this.props;
+    const {studentFilterData} = this.state;
 
     e.preventDefault();
-    studentFilterData.selectedIds = "";
-    let els = document.querySelectorAll("input[type=checkbox]");
-    const delim = "#~#";
-    var empty = [].filter.call(els, function (el: any) {
-      let txt: any = document.querySelector("#t" + el.id);
+    studentFilterData.selectedIds = '';
+    let els = document.querySelectorAll('input[type=checkbox]');
+    const delim = '#~#';
+    var empty = [].filter.call(els, function(el: any) {
+      let txt: any = document.querySelector('#t' + el.id);
       let txtIds: any;
       if (el.checked) {
-        const eid = "" + el.id + delim + "PRESENT" + delim
-        var txtData = "";
+        const eid = '' + el.id + delim + 'PRESENT' + delim;
+        var txtData = '';
         if (txt != null) {
-          var tmp = studentFilterData.textValueMap["t" + el.id];
+          var tmp = studentFilterData.textValueMap['t' + el.id];
           if (tmp === undefined) {
             txtData = txt.value;
           } else {
@@ -564,10 +632,10 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
         let sadt = new SaData(txtIds, studentFilterData.lecture.id);
         studentFilterData.payLoad.push(sadt);
       } else {
-        const eid = "" + el.id + delim + "ABSENT" + delim
-        var txtData = "";
+        const eid = '' + el.id + delim + 'ABSENT' + delim;
+        var txtData = '';
         if (txt != null) {
-          var tmp = studentFilterData.textValueMap["t" + el.id];
+          var tmp = studentFilterData.textValueMap['t' + el.id];
           if (tmp === undefined) {
             txtData = txt.value;
           } else {
@@ -583,52 +651,56 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
 
     console.log('total IDS : ', studentFilterData.selectedIds);
 
-    let btn: any = document.querySelector("#btnSave");
-    btn.setAttribute("disabled", true);
+    let btn: any = document.querySelector('#btnSave');
+    btn.setAttribute('disabled', true);
     return updateStudentAttendanceData({
-      variables: { input: studentFilterData.payLoad },
-    }).then((data: { data: { updateStudentAttendanceData: { statusDesc: any; }; }; })=> {
-      btn.removeAttribute("disabled");
-      console.log('Update Result: ', data.data.updateStudentAttendanceData.statusDesc);
-      alert(data.data.updateStudentAttendanceData.statusDesc);
-    }).catch((error: any) => {
-      btn.removeAttribute("disabled");
-      console.log('there is some error while updating student attendance data', error);
-      return Promise.reject(`there is some error while updating student attendance data: ${error}`);
-    });
-
-
-
-  }
+      variables: {input: studentFilterData.payLoad},
+    })
+      .then((data: {data: {updateStudentAttendanceData: {statusDesc: any}}}) => {
+        btn.removeAttribute('disabled');
+        console.log('Update Result: ', data.data.updateStudentAttendanceData.statusDesc);
+        alert(data.data.updateStudentAttendanceData.statusDesc);
+      })
+      .catch((error: any) => {
+        btn.removeAttribute('disabled');
+        console.log('there is some error while updating student attendance data', error);
+        return Promise.reject(
+          `there is some error while updating student attendance data: ${error}`
+        );
+      });
+  };
 
   handleChange = (e: any) => {
-    const { id, value } = e.nativeEvent.target;
-    const { studentFilterData } = this.state;
+    const {id, value} = e.nativeEvent.target;
+    const {studentFilterData} = this.state;
     const key = id;
     const val = value;
     e.preventDefault();
     studentFilterData.textValueMap[key] = val;
     this.setState({
-      studentFilterData: studentFilterData
+      studentFilterData: studentFilterData,
     });
-
-  }
-
+  };
 
   changeDate = (e: any) => {
-
-    const { studentFilterData } = this.state;
+    const {studentFilterData} = this.state;
     const varDt = e;
-    console.log("handling date picker changed date...", varDt);
+    console.log('handling date picker changed date...', varDt);
     this.setState({
-      startDate: varDt
+      startDate: varDt,
     });
 
-    this.createLectures(this.props.data.createStudentAttendanceCacheForAdmin.lectures, this.props.data.createStudentAttendanceCacheForAdmin.attendanceMasters, studentFilterData.batch.id, studentFilterData.section.id, varDt);
-  }
+    this.createLectures(
+      this.props.data.createStudentAttendanceCacheForAdmin.lectures,
+      this.props.data.createStudentAttendanceCacheForAdmin.attendanceMasters,
+      studentFilterData.batch.id,
+      studentFilterData.section.id,
+      varDt
+    );
+  };
 
   createGrid(ary: any) {
-    const { studentFilterData, searchKey, sortBy } = this.state;
+    const {studentFilterData, searchKey, sortBy} = this.state;
     const retVal = [];
     const len = ary.length;
     let trimmedSearchKey = searchKey.trim();
@@ -639,39 +711,45 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
       let v = ary[pd];
       for (let x = 0; x < v.data.getStudentAttendanceDataForAdmin.length; x++) {
         let k = v.data.getStudentAttendanceDataForAdmin[x];
-        if (!trimmedSearchKey || (trimmedSearchKey && k.studentName.indexOf(trimmedSearchKey) !== -1)) {
+        if (
+          !trimmedSearchKey ||
+          (trimmedSearchKey && k.studentName.indexOf(trimmedSearchKey) !== -1)
+        ) {
           retVal.push(
             <tbody>
               <tr>
                 <td>{k.studentId}</td>
                 <td>{k.studentName}</td>
                 <td>
-                  {k.currentDateStatus === 'PRESENT' &&
-                    (
-                      <label className="switch">
-                        {' '}
-                        <input type="checkbox" id={k.studentId} name={k.studentId} defaultChecked /> <span className="slider" />{' '}
-                      </label>
-                    )
-                  }
-                  {k.currentDateStatus === 'ABSENT' &&
-                    (
-                      <label className="switch">
-                        {' '}
-                        <input type="checkbox" id={k.studentId} name={k.studentId} /> <span className="slider" />{' '}
-                      </label>
-                    )
-                  }
-                  {k.currentDateStatus === 'LECTURE_NOT_SCHEDULED' &&
-                    (
-                      <label >N/A</label>
-                    )
-                  }
+                  {k.currentDateStatus === 'PRESENT' && (
+                    <label className="switch">
+                      {' '}
+                      <input
+                        type="checkbox"
+                        id={k.studentId}
+                        name={k.studentId}
+                        defaultChecked
+                      />{' '}
+                      <span className="slider" />{' '}
+                    </label>
+                  )}
+                  {k.currentDateStatus === 'ABSENT' && (
+                    <label className="switch">
+                      {' '}
+                      <input type="checkbox" id={k.studentId} name={k.studentId} />{' '}
+                      <span className="slider" />{' '}
+                    </label>
+                  )}
+                  {k.currentDateStatus === 'LECTURE_NOT_SCHEDULED' && <label>N/A</label>}
                 </td>
                 <td>
-
-                  <input type="text" id={"t" + k.studentId} defaultValue={k.comments} maxLength={255} onChange={this.handleChange} ></input>
-
+                  <input
+                    type="text"
+                    id={'t' + k.studentId}
+                    defaultValue={k.comments}
+                    maxLength={255}
+                    onChange={this.handleChange}
+                  />
                 </td>
               </tr>
             </tbody>
@@ -686,7 +764,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
     for (let i = 0; i < len; i++) {
       let studentList = arr[i].data.getStudentAttendanceDataForAdmin;
       studentList.sort((a: any, b: any) => {
-        if (sortBy === "studentName") {
+        if (sortBy === 'studentName') {
           if (a[sortBy] > b[sortBy]) {
             return 1;
           } else if (a[sortBy] < b[sortBy]) {
@@ -694,15 +772,31 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
           }
           return 0;
         } else {
-          return (parseInt(a[sortBy]) - parseInt(b[sortBy]));
+          return parseInt(a[sortBy]) - parseInt(b[sortBy]);
         }
       });
     }
   }
   render() {
-    const { data: { createStudentAttendanceCacheForAdmin, refetch }, mutate, mutateUpd, history, match } = this.props;
+    const {
+      data: {createStudentAttendanceCacheForAdmin, refetch},
+      mutate,
+      mutateUpd,
+      history,
+      match,
+    } = this.props;
     // const { studentFilterData, departments, batches, semesters, subjects, sections, lectures, terms, attendanceMasters, submitted } = this.state;
-    const { studentFilterData, departments, batches, subjects, sections, lectures, terms, attendanceMasters, submitted } = this.state;
+    const {
+      studentFilterData,
+      departments,
+      batches,
+      subjects,
+      sections,
+      lectures,
+      terms,
+      attendanceMasters,
+      submitted,
+    } = this.state;
 
     return (
       <section className="plugin-bg-white">
@@ -711,26 +805,35 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
           Admin - Mark Attendance
         </h3>
         <div className="p-1">
-          <form className="gf-form-group" onSubmit={this.onFormSubmit} >
+          <form className="gf-form-group" onSubmit={this.onFormSubmit}>
             <table id="t-attendance" className="markAttendance">
               <thead>
                 <tr>
-                  <th>Term</th>
+                  <th className="width-12">Term</th>
                   {/* <th>Department</th> */}
-                  <th>Year</th>
+                  <th className="width-12">Year</th>
                   {/* <th>Semester</th> */}
-                  <th>Subject</th>
-                  <th>Section</th>
-                  <th>Lectures</th>
-                  <th>Date</th>
-                  <th>Take Attendace</th>
+                  <th className="width-12">Subject</th>
+                  <th className="width-12">Section</th>
+                  <th className="width-12">Lectures</th>
+                  <th className="width-12">Date</th>
+                  <th className="width-12">Take Attendace</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td>
-                    <select required name="term" id="term" onChange={this.onChange} value={studentFilterData.term.id} className="gf-form-input">
-                      {this.createTerms(this.props.data.createStudentAttendanceCacheForAdmin.terms)}
+                    <select
+                      required
+                      name="term"
+                      id="term"
+                      onChange={this.onChange}
+                      value={studentFilterData.term.id}
+                      className="gf-form-input"
+                    >
+                      {this.createTerms(
+                        this.props.data.createStudentAttendanceCacheForAdmin.terms
+                      )}
                     </select>
                   </td>
                   {/* <td>
@@ -739,8 +842,18 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
                     </select>
                   </td> */}
                   <td>
-                    <select required name="batch" id="batch" onChange={this.onChange} value={studentFilterData.batch.id} className="gf-form-input max-width-22">
-                      {this.createBatches(this.props.data.createStudentAttendanceCacheForAdmin.batches, studentFilterData.department.id)}
+                    <select
+                      required
+                      name="batch"
+                      id="batch"
+                      onChange={this.onChange}
+                      value={studentFilterData.batch.id}
+                      className="gf-form-input max-width-22"
+                    >
+                      {this.createBatches(
+                        this.props.data.createStudentAttendanceCacheForAdmin.batches,
+                        studentFilterData.department.id
+                      )}
                     </select>
                   </td>
                   {/* <td>
@@ -749,27 +862,74 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
                     </select>
                   </td> */}
                   <td>
-                    <select required name="subject" id="subject" onChange={this.onChange} value={studentFilterData.subject.id} className="gf-form-input max-width-22">
-                      {this.createSubjects(this.props.data.createStudentAttendanceCacheForAdmin.subjects, studentFilterData.department.id, studentFilterData.batch.id)}
+                    <select
+                      required
+                      name="subject"
+                      id="subject"
+                      onChange={this.onChange}
+                      value={studentFilterData.subject.id}
+                      className="gf-form-input max-width-22"
+                    >
+                      {this.createSubjects(
+                        this.props.data.createStudentAttendanceCacheForAdmin.subjects,
+                        studentFilterData.department.id,
+                        studentFilterData.batch.id
+                      )}
                     </select>
                   </td>
                   <td>
-                    <select name="section" id="section" onChange={this.onChange} value={studentFilterData.section.id} className="gf-form-input max-width-22">
-                      {this.createSections(this.props.data.createStudentAttendanceCacheForAdmin.sections, studentFilterData.batch.id)}
+                    <select
+                      name="section"
+                      id="section"
+                      onChange={this.onChange}
+                      value={studentFilterData.section.id}
+                      className="gf-form-input max-width-22"
+                    >
+                      {this.createSections(
+                        this.props.data.createStudentAttendanceCacheForAdmin.sections,
+                        studentFilterData.batch.id
+                      )}
                     </select>
                   </td>
                   <td>
-                    <select required name="lecture" id="lecture" onChange={this.onChange} value={studentFilterData.lecture.id} className="gf-form-input max-width-22">
-                      {this.createLectures(this.props.data.createStudentAttendanceCacheForAdmin.lectures, this.props.data.createStudentAttendanceCacheForAdmin.attendanceMasters, studentFilterData.batch.id, studentFilterData.section.id, this.state.startDate)}
+                    <select
+                      required
+                      name="lecture"
+                      id="lecture"
+                      onChange={this.onChange}
+                      value={studentFilterData.lecture.id}
+                      className="gf-form-input max-width-22"
+                    >
+                      {this.createLectures(
+                        this.props.data.createStudentAttendanceCacheForAdmin.lectures,
+                        this.props.data.createStudentAttendanceCacheForAdmin
+                          .attendanceMasters,
+                        studentFilterData.batch.id,
+                        studentFilterData.section.id,
+                        this.state.startDate
+                      )}
                     </select>
                   </td>
                   <td>
                     {/* <DatePickerComponent id="dtPicker" name="dtPicker" className="markDate" onChange={this.onClick}/> */}
-                    <DatePicker selected={this.state.startDate} value={this.state.startDate} onChange={this.changeDate} id="dtPicker" name="dtPicker" />
+                    <DatePicker
+                      selected={this.state.startDate}
+                      value={this.state.startDate}
+                      onChange={this.changeDate}
+                      id="dtPicker"
+                      name="dtPicker"
+                    />
                   </td>
                   <td>
-                    <button className="btn btn-primary" type="submit" id="btnTakeAtnd" name="btnTakeAtnd" style={{ width: '130px' }}>Take Attendance</button>
-
+                    <button
+                      className="btn btn-primary"
+                      type="submit"
+                      id="btnTakeAtnd"
+                      name="btnTakeAtnd"
+                      style={{width: '130px'}}
+                    >
+                      Take Attendance
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -778,16 +938,27 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
             <div className="tflex bg-heading mt-1" id="detailGrid">
               <h4 className="p-1 py-2 mb-0">Mark Attendance</h4>
               <div className="hhflex">
-
                 <div className="mx-2">
-                  <select className="ma-select" name="sortBy" onChange={this.onChange} value={this.state.sortBy}>
+                  <select
+                    className="ma-select"
+                    name="sortBy"
+                    onChange={this.onChange}
+                    value={this.state.sortBy}
+                  >
                     <option value="">Sort By</option>
                     <option value="studentName">Name</option>
                     <option value="studentId">ID</option>
                   </select>
                 </div>
                 <div className="h-center ma-select">
-                  <input type="text" placeholder="Search Student" className="ma-select" name="searchKey" value={this.state.searchKey} onChange={this.onChange} />
+                  <input
+                    type="text"
+                    placeholder="Search Student"
+                    className="ma-select"
+                    name="searchKey"
+                    value={this.state.searchKey}
+                    onChange={this.onChange}
+                  />
                   <i className="fa fa-search" aria-hidden="true" />
                 </div>
               </div>
@@ -795,7 +966,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
 
             <div className="hide" id="detailGridTable">
               <table className="fwidth" id="matable">
-                <thead >
+                <thead>
                   <tr>
                     <th>Student Id</th>
                     <th>Student Name</th>
@@ -804,39 +975,32 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
                   </tr>
                 </thead>
 
-                {
-                  this.createGrid(this.state.studentFilterData.mutateResult)
-
-                }
-
+                {this.createGrid(this.state.studentFilterData.mutateResult)}
               </table>
 
               <div className="d-flex fwidth justify-content-between pt-2">
-                <p></p>
+                <p />
                 <div>
-
-                  <button className="btn btn-primary mr-1" id="btnSave" name="btnSave" onClick={this.onClick}>Save</button>
-
+                  <button
+                    className="btn btn-primary mr-1"
+                    id="btnSave"
+                    name="btnSave"
+                    onClick={this.onClick}
+                  >
+                    Save
+                  </button>
                 </div>
               </div>
-
             </div>
-
           </form>
         </div>
-
-
-
       </section>
-
-
-
     );
   }
 }
 
 // export default withLoadingHandler(
-  
+
 //   compose(
 //     graphql<StudentAttendanceListQueryTypeForAdmin, StudentAttendanceRootProps>(StudentAttendanceFilterQueryGql, {
 //       name: "mutate"
@@ -845,23 +1009,21 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState>{
 //       name: "mutateUpd",
 //     }),
 //   )
-  
+
 //   (MarkAttendance) as any
 // );
 
 export default graphql(CRET_STU_ATD_CAC_ADM, {
-  options: ({ }) => ({
+  options: ({}) => ({
     variables: {
-      branchId: 1851,
+      branchId: 1951, //1851,
       academicYearId: 1701,
-      lectureDate: moment(new Date()).format("DD-MM-YYYY")
-    }
-  })
-}) (withLoadingHandler(
-
-  compose(
-    graphql(GET_STU_ATTE_DATA, { name: "getStudentAttendanceDataForAdmin" }),
-    graphql(UPD_STU_ATTE_DATA, { name: "updateStudentAttendanceData" }),
-  )
-  (MarkAttendance) as any
-));
+      lectureDate: moment(new Date()).format('DD-MM-YYYY'),
+    },
+  }),
+})(
+  withLoadingHandler(compose(
+    graphql(GET_STU_ATTE_DATA, {name: 'getStudentAttendanceDataForAdmin'}),
+    graphql(UPD_STU_ATTE_DATA, {name: 'updateStudentAttendanceData'})
+  )(MarkAttendance) as any)
+);
