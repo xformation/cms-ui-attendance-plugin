@@ -190,7 +190,9 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
     ];
     for (let i = 0; i < batches.length; i++) {
       let id = batches[i].id;
+      console.log('bat', id);
       let dptId = '' + batches[i].department.id;
+      console.log('dep', dptId);
       if (dptId == selectedDepartmentId) {
         batchesOptions.push(
           <option key={id} value={id}>
@@ -275,23 +277,31 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
     ];
     for (let i = 0; i < lectures.length; i++) {
       let id = lectures[i].id;
+      console.log('lec', id);
       let lcDt = moment(lectures[i].strLecDate, 'DD-MM-YYYY');
+      // console.log('llcDtec', lcDt);
       let amBthId = '' + lectures[i].attendancemaster.batch.id;
-      if (
-        lcDt.isSame(curDate) &&
-        amBthId === selectedBatchId &&
-        subObj.options[subObj.selectedIndex].text ===
-          lectures[i].attendancemaster.teach.subject.subjectDesc
-      ) {
+      // console.log('amBthId', amBthId);
+      let sub = lectures[i].attendancemaster.teach.subject.subjectDesc;
+      let sec = lectures[i].attendancemaster.section;
+      console.log('sec', sec);
+      console.log('sub', sub);
+      // if (
+      // lcDt.isSame(curDate) &&
+      // amBthId === selectedBatchId &&
+      // subObj.options[subObj.selectedIndex].text ===
+      //   lectures[i].attendancemaster.teach.subject.subjectDesc
+      //)
+      {
         let amSecId =
           lectures[i].attendancemaster.section !== null
             ? '' + lectures[i].attendancemaster.section.id
             : '';
-
         if (amSecId !== '') {
           if (amSecId === selectedSectionId) {
             lecturesOptions.push(
               <option key={id} value={id}>
+                {lectures[i].id}
                 {subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} -{' '}
                 {lectures[i].endTime}
               </option>
@@ -300,6 +310,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
         } else {
           lecturesOptions.push(
             <option key={id} value={id}>
+              {lectures[i].id}
               {subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} -{' '}
               {lectures[i].endTime}
             </option>
@@ -365,7 +376,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
       submitted: true,
     });
 
-    const {mutate} = this.props;
+    const {getStudentAttendanceDataForAdmin} = this.props;
     const {studentFilterData} = this.state;
     e.preventDefault();
 
@@ -385,6 +396,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
       selectedDate = moment(tmpDt, 'DD-MM-YYYY');
       console.log('Date at the time of submission : ', selectedDate);
       let terms = this.props.data.createStudentAttendanceCacheForAdmin.terms;
+      // console.log('su', terms);
       for (let i = 0; i < terms.length; i++) {
         let id = '' + terms[i].id + '';
         if (studentFilterData.term.id === id) {
@@ -425,7 +437,8 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
         sectionId: studentFilterData.section.id,
         subjectId: studentFilterData.subject.id,
         attendanceDate: moment(selectedDate).format('DD-MM-YYYY'),
-        lectureId: studentFilterData.lecture.id,
+        lectureId: 2051,
+        //studentFilterData.lecture.id,
         academicYearId: studentFilterData.academicYear.id,
         termId: studentFilterData.term.id,
       };
@@ -435,7 +448,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
       // let dataSavedMessage: any = document.querySelector(".data-saved-message");
       // dataSavedMessage.style.display = "none";
       console.log('calling mutation to get attendance data :::::: ');
-      return mutate({
+      return getStudentAttendanceDataForAdmin({
         variables: {filter: studentFilterInputData},
       })
         .then((data: any) => {
@@ -443,9 +456,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
           studentFilterData.mutateResult = [];
           studentFilterData.mutateResult.push(sdt);
           studentFilterData.filtered.push(sdt);
-          this.setState({
-            studentFilterData: studentFilterData,
-          });
+          this.setState({studentFilterData: studentFilterData});
           console.log('Query Result ::::: ', studentFilterData.mutateResult);
 
           btn.removeAttribute('disabled');
@@ -606,7 +617,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
   };
 
   onClick = (e: any) => {
-    const {updateStudentAttendanceData} = this.props;
+    const {UPD_STU_ATTE_DATA} = this.props;
     const {studentFilterData} = this.state;
 
     e.preventDefault();
@@ -653,10 +664,8 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
 
     let btn: any = document.querySelector('#btnSave');
     btn.setAttribute('disabled', true);
-    return updateStudentAttendanceData({
-      variables: {input: studentFilterData.payLoad},
-    })
-      .then((data: {data: {updateStudentAttendanceData: {statusDesc: any}}}) => {
+    return UPD_STU_ATTE_DATA({variables: {input: studentFilterData.payLoad}})
+      .then((data: any) => {
         btn.removeAttribute('disabled');
         console.log('Update Result: ', data.data.updateStudentAttendanceData.statusDesc);
         alert(data.data.updateStudentAttendanceData.statusDesc);
@@ -809,15 +818,15 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
             <table id="t-attendance" className="markAttendance">
               <thead>
                 <tr>
-                  <th className="width-12">Term</th>
+                  <th>Term</th>
                   {/* <th>Department</th> */}
-                  <th className="width-12">Year</th>
+                  <th>Year</th>
                   {/* <th>Semester</th> */}
-                  <th className="width-12">Subject</th>
-                  <th className="width-12">Section</th>
-                  <th className="width-12">Lectures</th>
-                  <th className="width-12">Date</th>
-                  <th className="width-12">Take Attendace</th>
+                  <th>Subject</th>
+                  <th>Section</th>
+                  <th>Lectures</th>
+                  <th>Date</th>
+                  <th>Take Attendace</th>
                 </tr>
               </thead>
               <tbody>
@@ -1016,13 +1025,14 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
 export default graphql(CRET_STU_ATD_CAC_ADM, {
   options: ({}) => ({
     variables: {
-      branchId: 1951, //1851,
+      branchId: 1951,
       academicYearId: 1701,
-      lectureDate: moment(new Date()).format('DD-MM-YYYY'),
+      // lectureDate: moment(new Date()).format('DD-MM-YYYY'),
     },
   }),
 })(
   withLoadingHandler(compose(
+    graphql(CRET_STU_ATD_CAC_ADM, {name: 'createStudentAttendanceCacheForAdmin'}),
     graphql(GET_STU_ATTE_DATA, {name: 'getStudentAttendanceDataForAdmin'}),
     graphql(UPD_STU_ATTE_DATA, {name: 'updateStudentAttendanceData'})
   )(MarkAttendance) as any)
