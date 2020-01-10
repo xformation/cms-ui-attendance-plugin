@@ -286,13 +286,12 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
       let sec = lectures[i].attendancemaster.section;
       console.log('sec', sec);
       console.log('sub', sub);
-      // if (
-      // lcDt.isSame(curDate) &&
-      // amBthId === selectedBatchId &&
-      // subObj.options[subObj.selectedIndex].text ===
-      //   lectures[i].attendancemaster.teach.subject.subjectDesc
-      //)
-      {
+      if (
+        lcDt.isSame(curDate) &&
+        amBthId === selectedBatchId &&
+        subObj.options[subObj.selectedIndex].text ===
+          lectures[i].attendancemaster.teach.subject.subjectDesc
+      ) {
         let amSecId =
           lectures[i].attendancemaster.section !== null
             ? '' + lectures[i].attendancemaster.section.id
@@ -301,18 +300,18 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
           if (amSecId === selectedSectionId) {
             lecturesOptions.push(
               <option key={id} value={id}>
-                {lectures[i].id}
-                {subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} -{' '}
-                {lectures[i].endTime}
+                {/* {lectures[i].id} */}
+                {lectures[i].attendancemaster.teach.subject.subjectDesc} :{' '}
+                {lectures[i].startTime} - {lectures[i].endTime}
               </option>
             );
           }
         } else {
           lecturesOptions.push(
             <option key={id} value={id}>
-              {lectures[i].id}
-              {subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} -{' '}
-              {lectures[i].endTime}
+              {/* {lectures[i].id} */}
+              {lectures[i].attendancemaster.teach.subject.subjectDesc} :{' '}
+              {lectures[i].startTime} - {lectures[i].endTime}
             </option>
           );
         }
@@ -617,7 +616,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
   };
 
   onClick = (e: any) => {
-    const {UPD_STU_ATTE_DATA} = this.props;
+    const {updateStudentAttendanceData} = this.props;
     const {studentFilterData} = this.state;
 
     e.preventDefault();
@@ -664,7 +663,9 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
 
     let btn: any = document.querySelector('#btnSave');
     btn.setAttribute('disabled', true);
-    return UPD_STU_ATTE_DATA({variables: {input: studentFilterData.payLoad}})
+    return updateStudentAttendanceData({
+      variables: {input: studentFilterData.payLoad},
+    })
       .then((data: any) => {
         btn.removeAttribute('disabled');
         console.log('Update Result: ', data.data.updateStudentAttendanceData.statusDesc);
