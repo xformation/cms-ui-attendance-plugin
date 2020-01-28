@@ -5,7 +5,7 @@ import { gQLClient } from '../../graphQLClient';
  
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
  
-import AttendanceTab from './AttendanceTab';
+import AttendanceTab from './TabPage';
 import "../../css/tabs.css";
  
 // export default function init() {

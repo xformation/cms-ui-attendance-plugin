@@ -1,12 +1,9 @@
 import DatePicker from 'react-datepicker';
 import * as moment from 'moment';
 import * as React from 'react';
-import * as StudentAttendanceFilterQueryGql from './StudentAttendanceFilterQuery.graphql';
-import * as StudentAttendanceUpdateMutationGql from './StudentAttendanceUpdateMutation.graphql';
-import {RouteComponentProps} from 'react-router-dom';
-import {graphql, QueryProps, MutationFunc, compose} from 'react-apollo';
-import withLoadingHandler from '../withLoadingHandler';
-import {CRET_STU_ATD_CAC_ADM, GET_STU_ATTE_DATA, UPD_STU_ATTE_DATA} from '../_queries';
+import {withApollo} from 'react-apollo';
+import {GET_ATTENDANCE_DATA_FOR_ADMIN, UPDATE_STUDENT_ATTENDANCE_DATA} from '../_queries';
+import wsCmsBackendServiceSingletonClient from '../../../wsCmsBackendServiceClient';
 
 //import withStudentAtndDataLoader from "./withStudentAtndDataLoader";
 
@@ -72,6 +69,12 @@ type StudentAttendanceState = {
   startDate: any;
   searchKey: any;
   sortBy: any;
+  attendanceCacheForAdmin: any,
+  branchId: any,
+  academicYearId: any,
+  departmentId: any,
+  teacherId: any,
+  user: any,
 };
 
 class SaData {
@@ -83,21 +86,36 @@ class SaData {
   }
 }
 
-class MarkAttendance extends React.Component<any, StudentAttendanceState> {
-  constructor(props: any) {
+export interface MarkAttendanceProps extends React.HTMLAttributes<HTMLElement>{
+  [data: string]: any;
+  user?: any;
+  attendanceCacheForAdmin?: any;
+  branchId?: any;
+  academicYearId?: any;
+  departmentId?: any;
+  teacherId?: any;
+}
+class MarkAttendance extends React.Component<MarkAttendanceProps, StudentAttendanceState> {
+  constructor(props: MarkAttendanceProps) {
     super(props);
-    const params = new URLSearchParams(location.search);
+    // const params = new URLSearchParams(location.search);
     this.state = {
+      user: this.props.user,
+      attendanceCacheForAdmin: this.props.attendanceCacheForAdmin,
+      branchId: null,
+      academicYearId: null,
+      departmentId: null,
+      teacherId: null,
       studentFilterData: {
-        branch: {
-          id: params.get('bid'),
-        },
-        academicYear: {
-          id: params.get('ayid'),
-        },
-        department: {
-          id: params.get('dptid'),
-        },
+        // branch: {
+        //   id: this.props.branchId
+        // },
+        // academicYear: {
+        //   id: this.props.academicYearId
+        // },
+        // department: {
+        //   id: this.props.departmentId
+        // },
         batch: {
           id: '',
         },
@@ -153,6 +171,38 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
     this.handleChange = this.handleChange.bind(this);
     this.changeDate = this.changeDate.bind(this);
     this.createGrid = this.createGrid.bind(this);
+    this.registerSocket = this.registerSocket.bind(this);
+  }
+
+  async componentDidMount(){
+    await this.registerSocket();
+  }
+
+  registerSocket() {
+    const socket = wsCmsBackendServiceSingletonClient.getInstance();
+
+    socket.onmessage = (response: any) => {
+        let message = JSON.parse(response.data);
+        console.log("MarkAttendance. message received from server ::: ", message);
+        this.setState({
+            branchId: message.selectedBranchId,
+            academicYearId: message.selectedAcademicYearId,
+            departmentId: message.selectedDepartmentId,
+            teacherId: message.userId,
+        });
+        console.log("MarkAttendance. branchId: ",this.state.branchId);
+        console.log("MarkAttendance. departmentId: ",this.state.departmentId); 
+        console.log("MarkAttendance. ayId: ",this.state.academicYearId);  
+    }
+
+    socket.onopen = () => {
+        console.log("MarkAttendance. Opening websocekt connection on Admission EnquiryPage.tsx. User : ",this.state.user.login);
+        socket.send(this.state.user.login);
+    }
+
+    window.onbeforeunload = () => {
+        console.log("MarkAttendance. Closing websocket connection with cms backend service");
+    }
   }
 
   createTerms(terms: any) {
@@ -183,17 +233,13 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
   // }
 
   createBatches(batches: any, selectedDepartmentId: any) {
-    let batchesOptions = [
-      <option key={0} value="">
-        Select Year
-      </option>,
-    ];
+    let batchesOptions = [ <option key={0} value=""> Select Year </option>, ];
     for (let i = 0; i < batches.length; i++) {
       let id = batches[i].id;
       console.log('bat', id);
-      let dptId = '' + batches[i].department.id;
+      let dptId = batches[i].department.id;
       console.log('dep', dptId);
-      if (dptId == selectedDepartmentId) {
+      if (parseInt(dptId, 10) === parseInt(selectedDepartmentId, 10)) {
         batchesOptions.push(
           <option key={id} value={id}>
             {batches[i].batch}
@@ -205,21 +251,14 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
   }
   createSubjects(subjects: any, selectedDepartmentId: any, selectedBatchId: any) {
     let subjectsOptions = [
-      <option key={0} value="">
-        Select Subject
-      </option>,
+      <option key={0} value=""> Select Subject </option>,
     ];
     for (let i = 0; i < subjects.length; i++) {
       let id = subjects[i].id;
-      if (
-        subjects[i].department.id == selectedDepartmentId &&
-        subjects[i].batch.id == selectedBatchId
+      if ( parseInt(subjects[i].department.id, 10) === parseInt(selectedDepartmentId, 10) &&
+           parseInt(subjects[i].batch.id, 10) === parseInt(selectedBatchId, 10)
       ) {
-        subjectsOptions.push(
-          <option key={id} value={id}>
-            {subjects[i].subjectDesc}
-          </option>
-        );
+          subjectsOptions.push( <option key={id} value={id}> {subjects[i].subjectDesc} </option> );
       }
     }
     return subjectsOptions;
@@ -254,13 +293,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
     return sectionsOptions;
   }
 
-  createLectures(
-    lectures: any,
-    attendanceMasters: any,
-    selectedBatchId: any,
-    selectedSectionId: any,
-    changedDate: any
-  ) {
+  createLectures( lectures: any, attendanceMasters: any, selectedSubjectId: any, selectedBatchId: any, selectedSectionId: any, changedDate: any ) {
     let subObj: any = document.querySelector('#subject');
     var curDateS = moment(new Date()).format('DD-MM-YYYY');
     var curDate = moment(curDateS, 'DD-MM-YYYY');
@@ -280,24 +313,19 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
       console.log('lec', id);
       let lcDt = moment(lectures[i].strLecDate, 'DD-MM-YYYY');
       // console.log('llcDtec', lcDt);
-      let amBthId = '' + lectures[i].attendancemaster.batch.id;
+      let amBthId = lectures[i].attendancemaster.batch.id;
       // console.log('amBthId', amBthId);
       let sub = lectures[i].attendancemaster.teach.subject.subjectDesc;
       let sec = lectures[i].attendancemaster.section;
-      console.log('sec', sec);
-      console.log('sub', sub);
-      if (
-        lcDt.isSame(curDate) &&
-        amBthId === selectedBatchId &&
-        subObj.options[subObj.selectedIndex].text ===
-          lectures[i].attendancemaster.teach.subject.subjectDesc
+      console.log('subject - ', sub);
+      console.log('section - ', sec);
+      
+      if ( lcDt.isSame(curDate) && parseInt(amBthId, 10) === parseInt(selectedBatchId, 10) &&
+            parseInt(selectedSubjectId, 10) ===  parseInt(lectures[i].attendancemaster.teach.subject.id, 10)
       ) {
-        let amSecId =
-          lectures[i].attendancemaster.section !== null
-            ? '' + lectures[i].attendancemaster.section.id
-            : '';
+        let amSecId = lectures[i].attendancemaster.section !== null ? '' + lectures[i].attendancemaster.section.id : '';
         if (amSecId !== '') {
-          if (amSecId === selectedSectionId) {
+          if (parseInt(amSecId, 10) === parseInt(selectedSectionId, 10)) {
             lecturesOptions.push(
               <option key={id} value={id}>
                 {/* {lectures[i].id} */}
@@ -375,18 +403,12 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
       submitted: true,
     });
 
-    const {getStudentAttendanceDataForAdmin} = this.props;
-    const {studentFilterData} = this.state;
+    const {studentFilterData, academicYearId, branchId, departmentId, attendanceCacheForAdmin} = this.state;
     e.preventDefault();
 
-    // if(btn.id === 'btnTakeAtnd'){
-    if (
-      studentFilterData.branch.id &&
-      studentFilterData.department.id &&
-      studentFilterData.batch.id &&
-      studentFilterData.section.id &&
-      studentFilterData.lecture.id
-    ) {
+    if ( branchId && departmentId && studentFilterData.batch.id 
+        && studentFilterData.section.id && studentFilterData.lecture.id ) {
+      
       // let myDate:Date = moment(dateString,"YYYY-MM-DD").format("DD-MM-YYYY")
 
       let dtPk: any = document.querySelector('#dtPicker');
@@ -394,7 +416,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
       var tmpDt = moment(selectedDate).format('DD-MM-YYYY');
       selectedDate = moment(tmpDt, 'DD-MM-YYYY');
       console.log('Date at the time of submission : ', selectedDate);
-      let terms = this.props.data.createStudentAttendanceCacheForAdmin.terms;
+      let terms = attendanceCacheForAdmin.terms;
       // console.log('su', terms);
       for (let i = 0; i < terms.length; i++) {
         let id = '' + terms[i].id + '';
@@ -430,15 +452,14 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
       console.log('date picker value : ', moment(selectedDate).format('DD-MM-YYYY'));
 
       let studentFilterInputData = {
-        branchId: studentFilterData.branch.id,
-        departmentId: studentFilterData.department.id,
+        branchId: branchId,
+        departmentId: departmentId,
         batchId: studentFilterData.batch.id,
         sectionId: studentFilterData.section.id,
         subjectId: studentFilterData.subject.id,
         attendanceDate: moment(selectedDate).format('DD-MM-YYYY'),
-        lectureId: 2051,
-        //studentFilterData.lecture.id,
-        academicYearId: studentFilterData.academicYear.id,
+        lectureId: studentFilterData.lecture.id,
+        academicYearId: academicYearId,
         termId: studentFilterData.term.id,
       };
 
@@ -447,10 +468,15 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
       // let dataSavedMessage: any = document.querySelector(".data-saved-message");
       // dataSavedMessage.style.display = "none";
       console.log('calling mutation to get attendance data :::::: ');
-      return getStudentAttendanceDataForAdmin({
-        variables: {filter: studentFilterInputData},
-      })
-        .then((data: any) => {
+      // return getStudentAttendanceDataForAdmin({
+      //   variables: {filter: studentFilterInputData},
+      // })
+      this.props.client.mutate({
+        mutation: GET_ATTENDANCE_DATA_FOR_ADMIN,
+        variables: { 
+          filter: studentFilterInputData
+        },
+      }).then((data: any) => {
           const sdt = data;
           studentFilterData.mutateResult = [];
           studentFilterData.mutateResult.push(sdt);
@@ -492,16 +518,13 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
           let optLc: any = document.querySelector('#lecture');
           optLc.removeAttribute('disabled');
           dtPk.removeAttribute('disabled');
-          console.log(
-            'there was an error sending the query result - attendannce for admin role: ',
-            error
-          );
+          console.log( 'Error - attendannce for admin role: ', error );
           return Promise.reject(
             `Could not retrieve student attendance data for admin: ${error}`
           );
         });
-    }
     // }
+    }
   };
 
   onChange = (e: any) => {
@@ -616,7 +639,6 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
   };
 
   onClick = (e: any) => {
-    const {updateStudentAttendanceData} = this.props;
     const {studentFilterData} = this.state;
 
     e.preventDefault();
@@ -663,8 +685,12 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
 
     let btn: any = document.querySelector('#btnSave');
     btn.setAttribute('disabled', true);
-    return updateStudentAttendanceData({
-      variables: {input: studentFilterData.payLoad},
+    
+    this.props.client.mutate({
+      mutation: UPDATE_STUDENT_ATTENDANCE_DATA,
+      variables: { 
+        input: studentFilterData.payLoad
+      },
     })
       .then((data: any) => {
         btn.removeAttribute('disabled');
@@ -693,7 +719,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
   };
 
   changeDate = (e: any) => {
-    const {studentFilterData} = this.state;
+    const {studentFilterData, attendanceCacheForAdmin} = this.state;
     const varDt = e;
     console.log('handling date picker changed date...', varDt);
     this.setState({
@@ -701,8 +727,9 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
     });
 
     this.createLectures(
-      this.props.data.createStudentAttendanceCacheForAdmin.lectures,
-      this.props.data.createStudentAttendanceCacheForAdmin.attendanceMasters,
+      attendanceCacheForAdmin.lectures,
+      attendanceCacheForAdmin.attendanceMasters,
+      studentFilterData.subject.id,
       studentFilterData.batch.id,
       studentFilterData.section.id,
       varDt
@@ -734,12 +761,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
                   {k.currentDateStatus === 'PRESENT' && (
                     <label className="switch">
                       {' '}
-                      <input
-                        type="checkbox"
-                        id={k.studentId}
-                        name={k.studentId}
-                        defaultChecked
-                      />{' '}
+                      <input type="checkbox" id={k.studentId} name={k.studentId} defaultChecked />{' '}
                       <span className="slider" />{' '}
                     </label>
                   )}
@@ -753,13 +775,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
                   {k.currentDateStatus === 'LECTURE_NOT_SCHEDULED' && <label>N/A</label>}
                 </td>
                 <td>
-                  <input
-                    type="text"
-                    id={'t' + k.studentId}
-                    defaultValue={k.comments}
-                    maxLength={255}
-                    onChange={this.handleChange}
-                  />
+                  <input type="text" id={'t' + k.studentId} defaultValue={k.comments} maxLength={255} onChange={this.handleChange} />
                 </td>
               </tr>
             </tbody>
@@ -788,32 +804,15 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
     }
   }
   render() {
-    const {
-      data: {createStudentAttendanceCacheForAdmin, refetch},
-      mutate,
-      mutateUpd,
-      history,
-      match,
-    } = this.props;
-    // const { studentFilterData, departments, batches, semesters, subjects, sections, lectures, terms, attendanceMasters, submitted } = this.state;
-    const {
-      studentFilterData,
-      departments,
-      batches,
-      subjects,
-      sections,
-      lectures,
-      terms,
-      attendanceMasters,
-      submitted,
-    } = this.state;
+    // const { data: {createStudentAttendanceCacheForAdmin, refetch}, mutate, mutateUpd, history, match, } = this.props;
+    const { studentFilterData, attendanceCacheForAdmin, branchId, departmentId } = this.state;
 
     return (
       <section className="plugin-bg-white">
-        <h3 className="bg-heading p-1">
-          <i className="fa fa-university stroke-transparent mr-1" aria-hidden="true" />{' '}
-          Admin - Mark Attendance
-        </h3>
+        <h5 className="bg-heading p-1">
+          {/* <i className="fa fa-university stroke-transparent mr-1" aria-hidden="true" />{' '} */}
+          Admin Attendance
+        </h5>
         <div className="p-1">
           <form className="gf-form-group" onSubmit={this.onFormSubmit}>
             <table id="t-attendance" className="markAttendance">
@@ -833,111 +832,56 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
               <tbody>
                 <tr>
                   <td>
-                    <select
-                      required
-                      name="term"
-                      id="term"
-                      onChange={this.onChange}
-                      value={studentFilterData.term.id}
-                      className="gf-form-input"
-                    >
-                      {this.createTerms(
-                        this.props.data.createStudentAttendanceCacheForAdmin.terms
-                      )}
+                    <select required name="term" id="term" onChange={this.onChange} value={studentFilterData.term.id} className="gf-form-input" >
+                      {
+                        this.createTerms(attendanceCacheForAdmin.terms )
+                      }
                     </select>
                   </td>
                   {/* <td>
-                    <select required name="department" id="department" onChange={this.onChange} value={studentFilterData.department.id} className="gf-form-input max-width-22">
-                      {this.createDepartments(this.props.data.createStudentAttendanceCacheForAdmin.departments, studentFilterData.branch.id, studentFilterData.academicYear.id)}
+                    <select required name="department" id="department" onChange={this.onChange} value={departmentId} className="gf-form-input max-width-22">
+                      {this.createDepartments(filterCache.createStudentAttendanceCacheForAdmin.departments, branchId, academicYearId)}
                     </select>
                   </td> */}
                   <td>
-                    <select
-                      required
-                      name="batch"
-                      id="batch"
-                      onChange={this.onChange}
-                      value={studentFilterData.batch.id}
-                      className="gf-form-input max-width-22"
-                    >
-                      {this.createBatches(
-                        this.props.data.createStudentAttendanceCacheForAdmin.batches,
-                        studentFilterData.department.id
-                      )}
+                    <select required name="batch" id="batch" onChange={this.onChange} value={studentFilterData.batch.id} className="gf-form-input max-width-22" >
+                      {
+                        this.createBatches(attendanceCacheForAdmin.batches, departmentId )
+                      }
                     </select>
                   </td>
                   {/* <td>
                     <select required name="semester" id="semester" onChange={this.onChange} value={studentFilterData.semester.id} className="gf-form-input max-width-22">
-                      {this.createSemesters(this.props.data.createStudentAttendanceCacheForAdmin.semesters)}
+                      {this.createSemesters(filterCache.createStudentAttendanceCacheForAdmin.semesters)}
                     </select>
                   </td> */}
                   <td>
-                    <select
-                      required
-                      name="subject"
-                      id="subject"
-                      onChange={this.onChange}
-                      value={studentFilterData.subject.id}
-                      className="gf-form-input max-width-22"
-                    >
-                      {this.createSubjects(
-                        this.props.data.createStudentAttendanceCacheForAdmin.subjects,
-                        studentFilterData.department.id,
-                        studentFilterData.batch.id
-                      )}
+                    <select required name="subject" id="subject" onChange={this.onChange} value={studentFilterData.subject.id} className="gf-form-input max-width-22" >
+                      {
+                        this.createSubjects( attendanceCacheForAdmin.subjects, departmentId, studentFilterData.batch.id )
+                      }
                     </select>
                   </td>
                   <td>
-                    <select
-                      name="section"
-                      id="section"
-                      onChange={this.onChange}
-                      value={studentFilterData.section.id}
-                      className="gf-form-input max-width-22"
-                    >
-                      {this.createSections(
-                        this.props.data.createStudentAttendanceCacheForAdmin.sections,
-                        studentFilterData.batch.id
-                      )}
+                    <select required name="section" id="section" onChange={this.onChange} value={studentFilterData.section.id} className="gf-form-input max-width-22" >
+                      {
+                        this.createSections( attendanceCacheForAdmin.sections, studentFilterData.batch.id )
+                      }
                     </select>
                   </td>
                   <td>
-                    <select
-                      required
-                      name="lecture"
-                      id="lecture"
-                      onChange={this.onChange}
-                      value={studentFilterData.lecture.id}
-                      className="gf-form-input max-width-22"
-                    >
-                      {this.createLectures(
-                        this.props.data.createStudentAttendanceCacheForAdmin.lectures,
-                        this.props.data.createStudentAttendanceCacheForAdmin
-                          .attendanceMasters,
-                        studentFilterData.batch.id,
-                        studentFilterData.section.id,
-                        this.state.startDate
-                      )}
+                    <select required name="lecture" id="lecture" onChange={this.onChange} value={studentFilterData.lecture.id} className="gf-form-input max-width-22" >
+                      {
+                        this.createLectures( attendanceCacheForAdmin.lectures, attendanceCacheForAdmin.attendanceMasters, studentFilterData.subject.id, studentFilterData.batch.id, studentFilterData.section.id, this.state.startDate )
+                      }
                     </select>
                   </td>
                   <td>
                     {/* <DatePickerComponent id="dtPicker" name="dtPicker" className="markDate" onChange={this.onClick}/> */}
-                    <DatePicker
-                      selected={this.state.startDate}
-                      value={this.state.startDate}
-                      onChange={this.changeDate}
-                      id="dtPicker"
-                      name="dtPicker"
-                    />
+                    <DatePicker selected={this.state.startDate} value={this.state.startDate} onChange={this.changeDate} id="dtPicker" name="dtPicker" />
                   </td>
                   <td>
-                    <button
-                      className="btn btn-primary"
-                      type="submit"
-                      id="btnTakeAtnd"
-                      name="btnTakeAtnd"
-                      style={{width: '130px'}}
-                    >
+                    <button className="btn btn-primary" type="submit" id="btnTakeAtnd" name="btnTakeAtnd" style={{width: '130px'}} >
                       Take Attendance
                     </button>
                   </td>
@@ -945,34 +889,23 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
               </tbody>
             </table>
 
-            <div className="tflex bg-heading mt-1" id="detailGrid">
+            {/* <div className="tflex bg-heading mt-1" id="detailGrid">
               <h4 className="p-1 py-2 mb-0">Mark Attendance</h4>
               <div className="hhflex">
                 <div className="mx-2">
                   <select
-                    className="ma-select"
-                    name="sortBy"
-                    onChange={this.onChange}
-                    value={this.state.sortBy}
-                  >
+                    className="ma-select" name="sortBy" onChange={this.onChange} value={this.state.sortBy} >
                     <option value="">Sort By</option>
                     <option value="studentName">Name</option>
                     <option value="studentId">ID</option>
                   </select>
                 </div>
                 <div className="h-center ma-select">
-                  <input
-                    type="text"
-                    placeholder="Search Student"
-                    className="ma-select"
-                    name="searchKey"
-                    value={this.state.searchKey}
-                    onChange={this.onChange}
-                  />
+                  <input type="text" placeholder="Search Student" className="ma-select" name="searchKey" value={this.state.searchKey} onChange={this.onChange} />
                   <i className="fa fa-search" aria-hidden="true" />
                 </div>
               </div>
-            </div>
+            </div> */}
 
             <div className="hide" id="detailGridTable">
               <table className="fwidth" id="matable">
@@ -991,12 +924,7 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
               <div className="d-flex fwidth justify-content-between pt-2">
                 <p />
                 <div>
-                  <button
-                    className="btn btn-primary mr-1"
-                    id="btnSave"
-                    name="btnSave"
-                    onClick={this.onClick}
-                  >
+                  <button className="btn btn-primary mr-1" id="btnSave" name="btnSave" onClick={this.onClick} >
                     Save
                   </button>
                 </div>
@@ -1023,18 +951,20 @@ class MarkAttendance extends React.Component<any, StudentAttendanceState> {
 //   (MarkAttendance) as any
 // );
 
-export default graphql(CRET_STU_ATD_CAC_ADM, {
-  options: ({}) => ({
-    variables: {
-      branchId: 1951,
-      academicYearId: 1701,
-      // lectureDate: moment(new Date()).format('DD-MM-YYYY'),
-    },
-  }),
-})(
-  withLoadingHandler(compose(
-    graphql(CRET_STU_ATD_CAC_ADM, {name: 'createStudentAttendanceCacheForAdmin'}),
-    graphql(GET_STU_ATTE_DATA, {name: 'getStudentAttendanceDataForAdmin'}),
-    graphql(UPD_STU_ATTE_DATA, {name: 'updateStudentAttendanceData'})
-  )(MarkAttendance) as any)
-);
+export default withApollo(MarkAttendance)
+
+// export default graphql(CRET_STU_ATD_CAC_ADM, {
+//   options: ({}) => ({
+//     variables: {
+//       branchId: 1951,
+//       academicYearId: 1701,
+//       // lectureDate: moment(new Date()).format('DD-MM-YYYY'),
+//     },
+//   }),
+// })(
+//   withLoadingHandler(compose(
+//     graphql(CRET_STU_ATD_CAC_ADM, {name: 'createStudentAttendanceCacheForAdmin'}),
+//     graphql(GET_STU_ATTE_DATA, {name: 'getStudentAttendanceDataForAdmin'}),
+//     graphql(UPD_STU_ATTE_DATA, {name: 'updateStudentAttendanceData'})
+//   )(MarkAttendance) as any)
+// );

@@ -1,6 +1,6 @@
-export {CRET_STU_ATD_CAC_ADM} from './LoadStudentAtendMasQuery';
-export {GET_STU_ATTE_DATA} from './StudentAttendanceMastFilterQuery';
-export {UPD_STU_ATTE_DATA} from './StudentAttendanceUpdateMastMutation';
-export {CREATE_STU_CACHE} from './LoadStudentAtndQuery';
-export {GET_DAILY_ATTEN} from './StudentAttenFilterQuery';
-export {GET_STU_DATA} from './StudentAttenUpdateMutation';
+export {TEACHER_ATTENDANCE_CACHE} from './getTeacherAttendanceCache';
+export {ADMIN_ATTENDANCE_CACHE} from './getAdminAttendanceCache';
+export {GET_ATTENDANCE_DATA_FOR_TEACHER} from './getAttendanceDataForTeacher';
+export {UPDATE_STUDENT_ATTENDANCE_DATA} from './saveStudentAttendanceDate';
+
+export {GET_ATTENDANCE_DATA_FOR_ADMIN} from './getAttendanceDataForAdmin';

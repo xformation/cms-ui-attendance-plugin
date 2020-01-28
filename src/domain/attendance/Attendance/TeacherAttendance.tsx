@@ -7,14 +7,11 @@ import * as StudentAttendanceFilterQueryGql from './StudentAttendanceFilterQuery
 import * as StudentAttendanceUpdateMutationGql from './StudentAttendanceUpdateMutation.graphql';
 // import UpdateStudentAttendance from "./UpdateStudentAttendance";
 // import { withRouter, RouteComponentProps } from 'react-router';
-import { RouteComponentProps } from 'react-router-dom';
-import { graphql, QueryProps, MutationFunc, compose } from "react-apollo";
-import {
-  CREATE_STU_CACHE,
-  GET_DAILY_ATTEN,
-  GET_STU_DATA
-} from '../_queries';
+// import { RouteComponentProps } from 'react-router-dom';
+import { graphql, QueryProps, MutationFunc, compose, withApollo } from "react-apollo";
+import { GET_ATTENDANCE_DATA_FOR_TEACHER, UPDATE_STUDENT_ATTENDANCE_DATA } from '../_queries';
 import withLoadingHandler from '../withLoadingHandler';
+import wsCmsBackendServiceSingletonClient from '../../../wsCmsBackendServiceClient';
 // import withStudentAtndDataLoader from "./withStudentAtndDataLoader";
 // import { constants } from '../../../constants'
 
@@ -50,7 +47,13 @@ type StudentAttendanceState = {
   dtPicker: any,
   teaches: any,
   attendanceMasters: any,
-  submitted: any
+  submitted: any,
+  attendanceCacheForTeacher: any,
+  branchId: any,
+  academicYearId: any,
+  departmentId: any,
+  teacherId: any,
+  user: any,
 };
 
 class SaData {
@@ -62,25 +65,40 @@ class SaData {
   }
 }
 
+export interface TeacherAttendanceProps extends React.HTMLAttributes<HTMLElement>{
+  [data: string]: any;
+  user?: any;
+  attendanceCacheForTeacher?: any;
+  branchId?: any;
+  academicYearId?: any;
+  departmentId?: any;
+  teacherId?: any;
+}
 
-class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
-  constructor(props: any) {
+class TeacherAttendance<T = {[data: string]: any}> extends React.Component<TeacherAttendanceProps, StudentAttendanceState>{
+  constructor(props: TeacherAttendanceProps) {
     super(props);
-    const params = new URLSearchParams(location.search);
+    // const params = new URLSearchParams(location.search);
     this.state = {
+      attendanceCacheForTeacher: this.props.attendanceCacheForTeacher,
+      branchId: this.props.branchId,
+      academicYearId: this.props.academicYearId,
+      departmentId: this.props.departmentId,
+      teacherId: this.props.teacherId,
+      user: this.props.user,
       studentFilterData: {
-        branch: {
-          id: params.get('bid')
-        },
-        academicYear: {
-          id: params.get('ayid')
-        },
-        teacher: {
-          id: params.get('signedInUser')
-        },
-        department: {
-          id: params.get('dptid')
-        },
+        // branch: {
+        //   id: this.props.branchId
+        // },
+        // academicYear: {
+        //   id: this.props.academicYearId
+        // },
+        // teacher: {
+        //   id: this.props.teacherId
+        // },
+        // department: {
+        //   id: this.props.departmentId
+        // },
         batch: {
           id: ""
         },
@@ -127,6 +145,39 @@ class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
     this.createSubjects = this.createSubjects.bind(this);
     this.createSections = this.createSections.bind(this);
     this.createLectures = this.createLectures.bind(this);
+    this.registerSocket = this.registerSocket.bind(this);
+  }
+
+
+  async componentDidMount(){
+    await this.registerSocket();
+  }
+
+  registerSocket() {
+    const socket = wsCmsBackendServiceSingletonClient.getInstance();
+
+    socket.onmessage = (response: any) => {
+        let message = JSON.parse(response.data);
+        console.log("TeacherAttendance. message received from server ::: ", message);
+        this.setState({
+            branchId: message.selectedBranchId,
+            academicYearId: message.selectedAcademicYearId,
+            departmentId: message.selectedDepartmentId,
+            teacherId: message.userId,
+        });
+        console.log("TeacherAttendance. branchId: ",this.state.branchId);
+        console.log("TeacherAttendance. departmentId: ",this.state.departmentId);  
+        console.log("TeacherAttendance. ayId: ",this.state.academicYearId);  
+    }
+
+    socket.onopen = () => {
+        console.log("TeacherAttendance. Opening websocekt connection on Admission EnquiryPage.tsx. User : ",this.state.user.login);
+        socket.send(this.state.user.login);
+    }
+
+    window.onbeforeunload = () => {
+        console.log("TeacherAttendance. Closing websocket connection with cms backend service");
+    }
   }
 
   // createDepartments(departments: any, selectedBranchId: any, selectedAcademicYearId: any) {
@@ -141,14 +192,12 @@ class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
   // }
 
   createBatches(batches: any, selectedDepartmentId: any) {
-    let batchesOptions = [<option key={0} value="">Select Year</option>];
+    let batchesOptions = [ <option key={0} value=""> Select Year </option>, ];
     for (let i = 0; i < batches.length; i++) {
       let id = batches[i].id;
-      let dptId = "" + batches[i].department.id;
-      if (dptId == selectedDepartmentId) {
-        batchesOptions.push(
-          <option key={id} value={id}>{batches[i].batch}</option>
-        );
+      let dptId = batches[i].department.id;
+      if (parseInt(dptId, 10) === parseInt(selectedDepartmentId, 10)) {
+        batchesOptions.push( <option key={id} value={id}> {batches[i].batch} </option> );
       }
     }
     return batchesOptions;
@@ -157,7 +206,7 @@ class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
     let subjectsOptions = [<option key={0} value="">Select Subject</option>];
     for (let i = 0; i < subjects.length; i++) {
       let id = subjects[i].id;
-      if (subjects[i].department.id == selectedDepartmentId && subjects[i].batch.id == selectedBatchId) {
+      if (parseInt(subjects[i].department.id, 10) === parseInt(selectedDepartmentId, 10) && parseInt(subjects[i].batch.id, 10) === parseInt(selectedBatchId, 10)) {
         subjectsOptions.push(
           <option key={id} value={id}>{subjects[i].subjectDesc}</option>
         );
@@ -179,8 +228,8 @@ class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
     let sectionsOptions = [<option key={0} value="">Select Section</option>];
     for (let i = 0; i < sections.length; i++) {
       let id = sections[i].id;
-      let sbthId = "" + sections[i].batch.id;
-      if (sbthId == selectedBatchId) {
+      let sbthId = sections[i].batch.id;
+      if (parseInt(sbthId, 10) === parseInt(selectedBatchId, 10)) {
         sectionsOptions.push(
           <option key={id} value={id}>{sections[i].section}</option>
         );
@@ -189,7 +238,7 @@ class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
     return sectionsOptions;
   }
 
-  createLectures(lectures: any, teaches: any, attendanceMasters: any, subjectId: any, selectedBatchId: any, selectedSectionId: any) {
+  createLectures(lectures: any, attendanceMasters: any, selectedSubjectId: any, selectedBatchId: any, selectedSectionId: any) {
     let subObj: any = document.querySelector("#subject");
     var curDateS = moment(new Date()).format("DD-MM-YYYY");
     var curDate = moment(curDateS, "DD-MM-YYYY");
@@ -197,20 +246,21 @@ class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
     for (let i = 0; i < lectures.length; i++) {
       let id = lectures[i].id;
       let lcDt = moment(lectures[i].strLecDate, "DD-MM-YYYY");
-      let amBthId = ""+lectures[i].attendancemaster.batch.id;
-      if (lcDt.isSame(curDate) && amBthId === selectedBatchId && subObj.options[subObj.selectedIndex].text === lectures[i].attendancemaster.teach.subject.subjectDesc) {
+      let amBthId = lectures[i].attendancemaster.batch.id;
+      let amSubId = lectures[i].attendancemaster.teach.subject.id;
+      if (lcDt.isSame(curDate) && parseInt(amBthId, 10) === parseInt(selectedBatchId, 10) && parseInt(selectedSubjectId, 10) === parseInt(amSubId)) {
         let amSecId = lectures[i].attendancemaster.section !== null ? ""+lectures[i].attendancemaster.section.id : "";
           
         if(amSecId !== ""){
-          if(amSecId === selectedSectionId){
+          if(parseInt(amSecId, 10) === parseInt(selectedSectionId,10)){
             lecturesOptions.push(
-              <option key={id} value={id}>{subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} - {lectures[i].endTime}</option>
+              <option key={id} value={id}>{lectures[i].attendancemaster.teach.subject.subjectDesc} : {lectures[i].startTime} - {lectures[i].endTime}</option>
             );
           }
         }
         else{
           lecturesOptions.push(
-            <option key={id} value={id}>{subObj.options[subObj.selectedIndex].text} : {lectures[i].startTime} - {lectures[i].endTime}</option>
+            <option key={id} value={id}>{lectures[i].attendancemaster.teach.subject.subjectDesc} : {lectures[i].startTime} - {lectures[i].endTime}</option>
           );
         } 
         
@@ -264,10 +314,11 @@ class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
     });
 
     const { mutate } = this.props;
-    const { studentFilterData } = this.state;
+    const { studentFilterData, academicYearId, branchId, departmentId, teacherId, user } = this.state;
     e.preventDefault();
 
-    if (studentFilterData.branch.id && studentFilterData.department.id && studentFilterData.batch.id && studentFilterData.section.id && studentFilterData.lecture.id) {
+    if (branchId && departmentId && studentFilterData.batch.id 
+        && studentFilterData.section.id && studentFilterData.lecture.id) {
 
       // e.target.querySelector("#department").setAttribute("disabled", true);
       e.target.querySelector("#batch").setAttribute("disabled", true);
@@ -280,22 +331,29 @@ class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
       e.target.querySelector("#detailGridTable").removeAttribute("class");
 
       let studentFilterInputData = {
-        branchId: studentFilterData.branch.id,
-        departmentId: studentFilterData.department.id,
+        branchId: branchId,
+        departmentId: departmentId,
         batchId: studentFilterData.batch.id,
         sectionId: studentFilterData.section.id,
         subjectId: studentFilterData.subject.id,
         attendanceDate: moment(new Date()).format("DD-MM-YYYY"),
         lectureId: studentFilterData.lecture.id,
-        teacherId: studentFilterData.teacher.id,
-        academicYearId: studentFilterData.academicYear.id
+        teacherId: teacherId,
+        academicYearId: academicYearId
       };
 
 
       let btn = e.target.querySelector("button[type='submit']");
       btn.setAttribute("disabled", true);
-      return mutate({
-        variables: { filter: studentFilterInputData },
+
+      // return mutate({
+      //   variables: { filter: studentFilterInputData },
+      // })
+      this.props.client.mutate({
+        mutation: GET_ATTENDANCE_DATA_FOR_TEACHER,
+        variables: { 
+          filter: studentFilterInputData
+        },
       }).then((data: any) => {
         const sdt = data;
         studentFilterData.mutateResult = [];
@@ -425,7 +483,7 @@ class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
 
   onClick = (e: any) => {
 
-    const { mutateUpd } = this.props;
+    // const { mutateUpd } = this.props;
     const { studentFilterData } = this.state;
 
     e.preventDefault();
@@ -472,9 +530,16 @@ class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
     // console.log('total IDS : ', studentFilterData.selectedIds);
     let btn : any = document.querySelector("#btnSave");
     btn.setAttribute("disabled", true);
-    return mutateUpd({
-      variables: { input: studentFilterData.payLoad },
-    }).then((data: any) => {
+    // return mutateUpd({
+    //   variables: { input: studentFilterData.payLoad },
+    // })
+    this.props.client.mutate({
+      mutation: UPDATE_STUDENT_ATTENDANCE_DATA,
+      variables: { 
+        input: studentFilterData.payLoad
+      },
+    })
+    .then((data: any) => {
       btn.removeAttribute("disabled");
       console.log('Update Result: ', data.data.updateStudentAttendanceData.statusDesc);
       alert(data.data.updateStudentAttendanceData.statusDesc);
@@ -502,15 +567,15 @@ class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
   }
 
   render() {
-    const { data: { createStudentAttendanceCache, refetch }, mutate, mutateUpd } = this.props;
+    // const { data: { createStudentAttendanceCache, refetch }, mutate, mutateUpd } = this.props;
     // const { studentFilterData, departments, batches, semesters, subjects, sections, lectures, teaches, attendanceMasters, submitted } = this.state;
-    const { studentFilterData, departments, batches, subjects, sections, lectures, teaches, attendanceMasters, submitted } = this.state;
+    const { studentFilterData, attendanceCacheForTeacher, departmentId, departments, batches, subjects, sections, lectures, teaches, attendanceMasters, submitted } = this.state;
     return (
       <section className="plugin-bg-white">
-        <h3 className="bg-heading p-1">
-          <i className="fa fa-university stroke-transparent mr-1" aria-hidden="true" />{' '}
-          Teacher - Mark Attendance
-        </h3>
+        <h5 className="bg-heading p-1">
+          {/* <i className="fa fa-university stroke-transparent mr-1" aria-hidden="true" />{' '} */}
+          Teacher Attendance
+        </h5>
         <div className="p-1">
           <form className="gf-form-group" onSubmit={this.onFormSubmit}>
             <table id="t-attendance">
@@ -529,33 +594,50 @@ class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
               <tbody>
                 <tr>
                   {/* <td>
-                    <select required name="department" id="department" onChange={this.onChange} value={studentFilterData.department.id} className="gf-form-input max-width-22">
-                      {this.createDepartments(this.props.data.createStudentAttendanceCache.departments, studentFilterData.branch.id, studentFilterData.academicYear.id)}
+                    <select required name="department" id="department" onChange={this.onChange} value={departmentId} className="gf-form-input max-width-22">
+                      {this.createDepartments(filterCache.createStudentAttendanceCache.departments, branchId, academicYearId)}
                     </select>
                   </td> */}
                   <td>
                     <select required name="batch" id="batch" onChange={this.onChange} value={studentFilterData.batch.id} className="gf-form-input max-width-22">
-                      {this.createBatches(this.props.data.createStudentAttendanceCache.batches, studentFilterData.department.id)}
+                      {
+                        attendanceCacheForTeacher !== null && attendanceCacheForTeacher != undefined &&  (
+                          this.createBatches(attendanceCacheForTeacher.batches, departmentId)
+                        )
+                        
+                      }
                     </select>
                   </td>
                   {/* <td>
                     <select required name="semester" id="semester" onChange={this.onChange} value={studentFilterData.semester.id} className="gf-form-input max-width-22">
-                      {this.createSemesters(this.props.data.createStudentAttendanceCache.semesters)}
+                      {this.createSemesters(filterCache.createStudentAttendanceCache.semesters)}
                     </select>
                   </td> */}
                   <td>
                     <select required name="subject" id="subject" onChange={this.onChange} value={studentFilterData.subject.id} className="gf-form-input max-width-22">
-                      {this.createSubjects(this.props.data.createStudentAttendanceCache.subjects, studentFilterData.department.id, studentFilterData.batch.id)}
+                      {
+                        attendanceCacheForTeacher !== null && attendanceCacheForTeacher != undefined && (
+                          this.createSubjects(attendanceCacheForTeacher.subjects, departmentId, studentFilterData.batch.id)
+                        )  
+                      }
                     </select>
                   </td>
                   <td>
-                    <select name="section" id="section" onChange={this.onChange} value={studentFilterData.section.id} className="gf-form-input max-width-22">
-                      {this.createSections(this.props.data.createStudentAttendanceCache.sections, studentFilterData.batch.id)}
+                    <select required name="section" id="section" onChange={this.onChange} value={studentFilterData.section.id} className="gf-form-input max-width-22">
+                      {
+                        attendanceCacheForTeacher !== null && attendanceCacheForTeacher != undefined && (
+                          this.createSections(attendanceCacheForTeacher.sections, studentFilterData.batch.id)
+                        )
+                      }
                     </select>
                   </td>
                   <td>
                     <select required name="lecture" id="lecture" onChange={this.onChange} value={studentFilterData.lecture.id} className="gf-form-input max-width-22">
-                      {this.createLectures(this.props.data.createStudentAttendanceCache.lectures, this.props.data.createStudentAttendanceCache.teaches, this.props.data.createStudentAttendanceCache.attendanceMasters, studentFilterData.subject.id, studentFilterData.batch.id, studentFilterData.section.id)}
+                      {
+                        attendanceCacheForTeacher !== null && attendanceCacheForTeacher != undefined && (
+                          this.createLectures(attendanceCacheForTeacher.lectures, attendanceCacheForTeacher.attendanceMasters, studentFilterData.subject.id, studentFilterData.batch.id, studentFilterData.section.id)
+                        )
+                      }
                     </select>
                   </td>
                   <td>
@@ -718,22 +800,22 @@ class TeacherAttendance extends React.Component<any, StudentAttendanceState>{
     );
   }
 }
-
-  export default graphql(CREATE_STU_CACHE, {
-    options: ({ }) => ({
-      variables: {
-        branchId: 1851,
-        academicYearId: 1701,
-        lectureDate: moment(new Date()).format("DD-MM-YYYY"),
-        teacherId: 2151
-      }
-    })
-  }) (withLoadingHandler(
+export default withApollo(TeacherAttendance)
+//   export default graphql(CREATE_STU_CACHE, {
+//     options: ({ }) => ({
+//       variables: {
+//         branchId: 1851,
+//         academicYearId: 1701,
+//         lectureDate: moment(new Date()).format("DD-MM-YYYY"),
+//         teacherId: 2151
+//       }
+//     })
+//   }) (withLoadingHandler(
   
-    compose(
-      graphql(GET_DAILY_ATTEN, { name: "getStudentAttendanceDataForAdmin" }),
-      graphql(GET_STU_DATA, { name: "updateStudentAttendanceData" }),
-    )
-    (TeacherAttendance) as any
-  )
-);
+//     compose(
+//       graphql(GET_DAILY_ATTEN, { name: "getStudentAttendanceDataForAdmin" }),
+//       graphql(GET_STU_DATA, { name: "updateStudentAttendanceData" }),
+//     )
+//     (TeacherAttendance) as any
+//   )
+// );

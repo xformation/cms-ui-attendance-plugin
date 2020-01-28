@@ -1,13 +1,15 @@
 import gql from 'graphql-tag';
 
-export const CRET_STU_ATD_CAC_ADM = gql`
+export const ADMIN_ATTENDANCE_CACHE = gql`
   query createStudentAttendanceCacheForAdmin(
     $branchId: String
+    $departmentId: String
     $academicYearId: String
     $lectureDate: String
   ) {
     createStudentAttendanceCacheForAdmin(
       branchId: $branchId
+      departmentId: $departmentId
       academicYearId: $academicYearId
       lectureDate: $lectureDate
     ) {

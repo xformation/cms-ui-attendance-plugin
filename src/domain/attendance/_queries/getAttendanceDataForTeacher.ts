@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 
-export const GET_STU_DATA = gql`
+export const GET_ATTENDANCE_DATA_FOR_TEACHER = gql`
   mutation getDailyStudentAttendanceData($filter: StudentAttendanceFilterInput!) {
     getDailyStudentAttendanceData(filter: $filter) {
       studentId
