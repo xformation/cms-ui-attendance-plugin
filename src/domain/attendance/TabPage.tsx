@@ -7,13 +7,15 @@ import 'react-datepicker/dist/react-datepicker.css';
 import {config} from '../../config';
 
 export default class AttendancesTab extends React.Component<any, any> {
+  LOGGED_IN_USER = new URLSearchParams(location.search).get('signedInUser');
   constructor(props: any) {
     super(props);
     this.state = {
       activeTab: 0,
-      user: null,
+      permissions: [],
     };
     this.toggleTab = this.toggleTab.bind(this);
+    this.getUserPermissions = this.getUserPermissions.bind(this);
   }
 
   toggleTab(tabNo: any) {
@@ -23,23 +25,30 @@ export default class AttendancesTab extends React.Component<any, any> {
   }
 
   async componentDidMount(){
-    try{
-      const response = await fetch(config.LOGGED_IN_USER_URL);
-      if (!response.ok) {
-        console.log("Attendance plugin. Response error : ",response.statusText);
-        return;
-      }
-      const json = await response.json();
-      this.setState({ user: json });
-    }catch(error){
-      console.log("Attendance plugin. Fetch user error: ",error);
-    }
+    await this.getUserPermissions();
+    console.log("Permissions : ",this.state.permissions);
+  }
 
-    console.log("Attendance plugin. USER -- ",this.state.user); 
+  async getUserPermissions(){
+    if(this.LOGGED_IN_USER !== 'admin' && this.LOGGED_IN_USER !== null) {
+      const URL = config.CMS_GLOBAL_CONFIG_URL + '?userName=' + this.LOGGED_IN_USER;
+      await fetch(URL).then(
+        response => response.json()
+      ).then(res =>{
+          const perm = res.loginResponse.authz.permissions;
+          const arr: any = [];
+          perm.map((item: any) =>{
+            arr[item] = item;
+          });
+          this.setState({
+            permissions: arr,
+          });
+      })
+    } 
   }
 
   render() {
-    const {activeTab, user} = this.state;
+    const {activeTab, permissions} = this.state;
     return (
       <section className="tab-container">
           <div >
@@ -51,20 +60,41 @@ export default class AttendancesTab extends React.Component<any, any> {
             </h3>
           </div>
           <Nav tabs className="pl-3 pl-3 mb-4 mt-4 boxShadow">
-            <NavItem className="cursor-pointer">
-              <NavLink className={`${activeTab === 0 ? 'active' : ''}`} onClick={() => { this.toggleTab(0); }} >
-                Attendance
-              </NavLink>
-            </NavItem>
+            {/* {
+              console.log("permissions :::::: ",permissions)
+            } */}
+            {
+              this.LOGGED_IN_USER !== 'admin' && permissions["Attendance"] !== null && permissions["Attendance"] !== undefined ?
+                <NavItem className="cursor-pointer">
+                  <NavLink className={`${activeTab === 0 ? 'active' : ''}`} onClick={() => { this.toggleTab(0); }} >
+                    Attendance
+                  </NavLink>
+                </NavItem>
+              : this.LOGGED_IN_USER === 'admin' ?
+                <NavItem className="cursor-pointer">
+                  <NavLink className={`${activeTab === 0 ? 'active' : ''}`} onClick={() => { this.toggleTab(0); }} >
+                    Attendance
+                  </NavLink>
+                </NavItem>
+              : null
+            }
+
           </Nav>
+          
+
           <TabContent activeTab={activeTab} className="border-right">
-            <TabPane tabId={0}>
-              {
-                user !== null && (
-                  <Attendance user={user}/>
-                )
-              }
-            </TabPane>
+            {
+              this.LOGGED_IN_USER !== 'admin' && permissions["Attendance"] !== null && permissions["Attendance"] !== undefined ?
+                <TabPane tabId={0}>
+                  <Attendance permissions={permissions}/>
+                </TabPane>
+              : this.LOGGED_IN_USER === 'admin' ?
+                <TabPane tabId={0}>
+                  <Attendance permissions={permissions}/>
+                </TabPane>
+              : null
+            }
+            
           </TabContent>
       </section>
     );

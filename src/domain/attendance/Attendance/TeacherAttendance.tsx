@@ -171,8 +171,8 @@ class TeacherAttendance<T = {[data: string]: any}> extends React.Component<Teach
     }
 
     socket.onopen = () => {
-        console.log("TeacherAttendance. Opening websocekt connection on Admission EnquiryPage.tsx. User : ",this.state.user.login);
-        socket.send(this.state.user.login);
+        console.log("TeacherAttendance. Opening websocekt connection. User : ",new URLSearchParams(location.search).get("signedInUser"));
+        socket.send(new URLSearchParams(location.search).get("signedInUser"));
     }
 
     window.onbeforeunload = () => {

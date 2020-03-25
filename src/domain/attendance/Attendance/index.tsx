@@ -11,12 +11,15 @@ import wsCmsBackendServiceSingletonClient from '../../../wsCmsBackendServiceClie
 export interface AttendanceProps extends React.HTMLAttributes<HTMLElement>{
     [data: string]: any;
     user?: any,
+    permissions?: any;
 }
 
 class Attendance extends React.Component<AttendanceProps, any> {
+    LOGGED_IN_USER = new URLSearchParams(location.search).get('signedInUser');
     constructor(props: AttendanceProps) {
         super(props);
         this.state = {
+            permissions: this.props.permissions,
             activeTab: 0,
             user: this.props.user,
             attendanceCacheForTeacher: null,
@@ -33,7 +36,6 @@ class Attendance extends React.Component<AttendanceProps, any> {
     }
 
     async componentDidMount(){
-        console.log("Attendance. component did mount. User ::::",this.state.user.login);
         await this.registerSocket();
         await this.getAttendanceCacheForTeacher();
         await this.getAttendanceCacheForAdmin();
@@ -57,8 +59,8 @@ class Attendance extends React.Component<AttendanceProps, any> {
         }
     
         socket.onopen = () => {
-           console.log("Attendance index. Opening websocekt connection on index.tsx. User : ",this.state.user);
-           socket.send(this.state.user.login);
+           console.log("Attendance index. Opening websocekt connection on index.tsx. User : ",new URLSearchParams(location.search).get("signedInUser"));
+           socket.send(new URLSearchParams(location.search).get("signedInUser"));
         }
     
         window.onbeforeunload = () => {
@@ -117,39 +119,85 @@ class Attendance extends React.Component<AttendanceProps, any> {
     }
 
     render() {
-        const { activeTab, user, attendanceCacheForTeacher, attendanceCacheForAdmin } = this.state;
+        const { activeTab, permissions, attendanceCacheForTeacher, attendanceCacheForAdmin } = this.state;
         return (
             <section className="tab-container row vertical-tab-container">
                 <Nav tabs className="pl-3 pl-3 mb-4 mt-4 col-sm-2">
-                    <NavItem className="cursor-pointer">
-                        <NavLink className={`vertical-nav-link ${activeTab === 0? 'side-active' : ''}`} onClick={() => { this.toggleTab(0); }} >
-                            Teacher Attendance
-                        </NavLink>
-                    </NavItem>
-                    <NavItem className="cursor-pointer">
-                        <NavLink className={`vertical-nav-link ${activeTab === 1 ? 'side-active' : ''}`} onClick={() => { this.toggleTab(1); }} >
-                           Admin Attendance
-                        </NavLink>
-                     </NavItem>
                     
-                   
+                    {
+                        this.LOGGED_IN_USER !== 'admin' && permissions["Teacher Attendance"] === "Teacher Attendance" ?
+                            <NavItem className="cursor-pointer">
+                                <NavLink className={`vertical-nav-link ${activeTab === 0? 'side-active' : ''}`} onClick={() => { this.toggleTab(0); }} >
+                                    Teacher Attendance
+                                </NavLink>
+                            </NavItem>
+                        : this.LOGGED_IN_USER === 'admin' ?
+                            <NavItem className="cursor-pointer">
+                                <NavLink className={`vertical-nav-link ${activeTab === 0? 'side-active' : ''}`} onClick={() => { this.toggleTab(0); }} >
+                                    Teacher Attendance
+                                </NavLink>
+                            </NavItem>
+                        : null
+                    }    
+
+                    
+                     {
+                        this.LOGGED_IN_USER !== 'admin' && permissions["Admin Attendance"] === "Admin Attendance" ?
+                            <NavItem className="cursor-pointer">
+                                <NavLink className={`vertical-nav-link ${activeTab === 1 ? 'side-active' : ''}`} onClick={() => { this.toggleTab(1); }} >
+                                Admin Attendance
+                                </NavLink>
+                            </NavItem>
+                        : this.LOGGED_IN_USER === 'admin' ?
+                            <NavItem className="cursor-pointer">
+                                <NavLink className={`vertical-nav-link ${activeTab === 1 ? 'side-active' : ''}`} onClick={() => { this.toggleTab(1); }} >
+                                Admin Attendance
+                                </NavLink>
+                            </NavItem>
+                        : null
+                    }
                 </Nav>
                 <TabContent activeTab={activeTab} className="col-sm-9 border-left p-t-1">
-                    <TabPane tabId={0}>
-                        {
-                            user !== null && attendanceCacheForTeacher !== null && (
-                                <TeacherAttendance user={user} attendanceCacheForTeacher={attendanceCacheForTeacher.createStudentAttendanceCache}></TeacherAttendance>
-                            )
-                        } 
-                    </TabPane>
-                    <TabPane tabId={1}>
-                        {
-                            user !== null && attendanceCacheForAdmin !== null && (
-                                <MarkAttendance user={user} attendanceCacheForAdmin={attendanceCacheForAdmin.createStudentAttendanceCacheForAdmin}></MarkAttendance>
-                            )
-                        }
-                    </TabPane>
-                   
+                    
+                    {
+                        this.LOGGED_IN_USER !== 'admin' && permissions["Teacher Attendance"] === "Teacher Attendance" ?
+                            <TabPane tabId={0}>
+                                {
+                                    attendanceCacheForTeacher !== null && (
+                                        <TeacherAttendance attendanceCacheForTeacher={attendanceCacheForTeacher.createStudentAttendanceCache}></TeacherAttendance>
+                                    )
+                                } 
+                            </TabPane>
+                        : this.LOGGED_IN_USER === 'admin' ?
+                            <TabPane tabId={0}>
+                                {
+                                    attendanceCacheForTeacher !== null && (
+                                        <TeacherAttendance attendanceCacheForTeacher={attendanceCacheForTeacher.createStudentAttendanceCache}></TeacherAttendance>
+                                    )
+                                } 
+                            </TabPane>
+                        : null
+                    }
+                    
+                    {
+                        this.LOGGED_IN_USER !== 'admin' && permissions["Admin Attendance"] === "Admin Attendance" ?
+                            <TabPane tabId={1}>
+                                {
+                                    attendanceCacheForAdmin !== null && (
+                                        <MarkAttendance attendanceCacheForAdmin={attendanceCacheForAdmin.createStudentAttendanceCacheForAdmin}></MarkAttendance>
+                                    )
+                                }
+                            </TabPane>
+                        : this.LOGGED_IN_USER === 'admin' ?
+                            <TabPane tabId={1}>
+                                {
+                                    attendanceCacheForAdmin !== null && (
+                                        <MarkAttendance attendanceCacheForAdmin={attendanceCacheForAdmin.createStudentAttendanceCacheForAdmin}></MarkAttendance>
+                                    )
+                                }
+                            </TabPane>
+                        : null
+                    }
                     
                 </TabContent>
             </section>

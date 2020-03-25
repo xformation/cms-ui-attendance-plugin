@@ -196,8 +196,8 @@ class MarkAttendance extends React.Component<MarkAttendanceProps, StudentAttenda
     }
 
     socket.onopen = () => {
-        console.log("MarkAttendance. Opening websocekt connection on Admission EnquiryPage.tsx. User : ",this.state.user.login);
-        socket.send(this.state.user.login);
+        console.log("MarkAttendance. Opening websocekt connection. User : ",new URLSearchParams(location.search).get("signedInUser"));
+        socket.send(new URLSearchParams(location.search).get("signedInUser"));
     }
 
     window.onbeforeunload = () => {
