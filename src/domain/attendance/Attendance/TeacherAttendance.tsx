@@ -1,37 +1,9 @@
 import * as React from 'react';
-// import DatePicker from 'react-datepicker';
 import * as moment from 'moment';
-// import { AttendanceServices } from '../_services';
-import * as StudentAttendanceFilterQueryGql from './StudentAttendanceFilterQuery.graphql';
-// import * as LoadStudentAtndQueryGql from './LoadStudentAtndQuery.graphql';
-import * as StudentAttendanceUpdateMutationGql from './StudentAttendanceUpdateMutation.graphql';
-// import UpdateStudentAttendance from "./UpdateStudentAttendance";
-// import { withRouter, RouteComponentProps } from 'react-router';
-// import { RouteComponentProps } from 'react-router-dom';
-import { graphql, QueryProps, MutationFunc, compose, withApollo } from "react-apollo";
+import { withApollo } from "react-apollo";
 import { GET_ATTENDANCE_DATA_FOR_TEACHER, UPDATE_STUDENT_ATTENDANCE_DATA } from '../_queries';
-import withLoadingHandler from '../withLoadingHandler';
+// import withLoadingHandler from '../withLoadingHandler';
 import wsCmsBackendServiceSingletonClient from '../../../wsCmsBackendServiceClient';
-// import withStudentAtndDataLoader from "./withStudentAtndDataLoader";
-// import { constants } from '../../../constants'
-
-// type StudentAttendanceRootProps = {
-//   data: QueryProps & LoadStudentAtndQuery;
-// }
-
-// type StudentAttendanceRootProps = RouteComponentProps<{
-//   branchId: string;
-//   academicYearId: string;
-//   teacherId: string;
-//   lectureDate: string;
-// }> & {
-//   data: QueryProps & LoadStudentAtndQuery;
-// }
-
-// type StudentAttendancePageProps = StudentAttendanceRootProps & {
-//   getDailyStudentAttendanceData: MutationFunc<DailyStudentAttendanceListQuery>;
-//   getDailyStudentAttendanceData: MutationFunc<UpdateStudentAttendanceMutation>;
-// };
 
 type StudentAttendanceState = {
   studentFilterData: any, 
@@ -53,7 +25,7 @@ type StudentAttendanceState = {
   academicYearId: any,
   departmentId: any,
   teacherId: any,
-  user: any,
+  // user: any,
 };
 
 class SaData {
@@ -67,7 +39,7 @@ class SaData {
 
 export interface TeacherAttendanceProps extends React.HTMLAttributes<HTMLElement>{
   [data: string]: any;
-  user?: any;
+  // user?: any;
   attendanceCacheForTeacher?: any;
   branchId?: any;
   academicYearId?: any;
@@ -75,7 +47,7 @@ export interface TeacherAttendanceProps extends React.HTMLAttributes<HTMLElement
   teacherId?: any;
 }
 
-class TeacherAttendance<T = {[data: string]: any}> extends React.Component<TeacherAttendanceProps, StudentAttendanceState>{
+class TeacherAttendance extends React.Component<TeacherAttendanceProps, StudentAttendanceState>{
   constructor(props: TeacherAttendanceProps) {
     super(props);
     // const params = new URLSearchParams(location.search);
@@ -85,7 +57,7 @@ class TeacherAttendance<T = {[data: string]: any}> extends React.Component<Teach
       academicYearId: this.props.academicYearId,
       departmentId: this.props.departmentId,
       teacherId: this.props.teacherId,
-      user: this.props.user,
+      // user: this.props.user,
       studentFilterData: {
         // branch: {
         //   id: this.props.branchId
@@ -148,7 +120,6 @@ class TeacherAttendance<T = {[data: string]: any}> extends React.Component<Teach
     this.registerSocket = this.registerSocket.bind(this);
   }
 
-
   async componentDidMount(){
     await this.registerSocket();
   }
@@ -167,7 +138,8 @@ class TeacherAttendance<T = {[data: string]: any}> extends React.Component<Teach
         });
         console.log("TeacherAttendance. branchId: ",this.state.branchId);
         console.log("TeacherAttendance. departmentId: ",this.state.departmentId);  
-        console.log("TeacherAttendance. ayId: ",this.state.academicYearId);  
+        console.log("TeacherAttendance. ayId: ",this.state.academicYearId);
+        console.log("TeacherAttendance. teacherId: ",this.state.teacherId);  
     }
 
     socket.onopen = () => {
@@ -313,8 +285,8 @@ class TeacherAttendance<T = {[data: string]: any}> extends React.Component<Teach
       submitted: true
     });
 
-    const { mutate } = this.props;
-    const { studentFilterData, academicYearId, branchId, departmentId, teacherId, user } = this.state;
+    // const { mutate } = this.props;
+    const { studentFilterData, academicYearId, branchId, departmentId, teacherId } = this.state;
     e.preventDefault();
 
     if (branchId && departmentId && studentFilterData.batch.id 
@@ -567,6 +539,8 @@ class TeacherAttendance<T = {[data: string]: any}> extends React.Component<Teach
   }
 
   render() {
+    console.log("attendanceCacheForTeacher -------------- ",this.state.attendanceCacheForTeacher);
+
     // const { data: { createStudentAttendanceCache, refetch }, mutate, mutateUpd } = this.props;
     // const { studentFilterData, departments, batches, semesters, subjects, sections, lectures, teaches, attendanceMasters, submitted } = this.state;
     const { studentFilterData, attendanceCacheForTeacher, departmentId, departments, batches, subjects, sections, lectures, teaches, attendanceMasters, submitted } = this.state;
@@ -652,17 +626,16 @@ class TeacherAttendance<T = {[data: string]: any}> extends React.Component<Teach
             </table>
 
             <div className="hide" id="detailGrid">
-              <h4 className="p-1 py-2 mb-0">Mark Attendance</h4>
-              <div className="hhflex">
-
+              {/* <h4 className="p-1 py-2 mb-0">Mark Attendance</h4> */}
+              <div className="hide">
                 <div className="mx-2">
                   <select className="ma-select">
                     <option value="">Sort By</option>
                     <option value="">Name</option>
                     <option value="">ID</option>
                   </select>
-                </div>
-                <div className="h-center ma-select">
+                {/* </div>
+                <div className="h-center ma-select"> */}
                   <input type="text" placeholder="Search Student" className="ma-select" />
                   <i className="fa fa-search" aria-hidden="true" />
                 </div>
@@ -801,21 +774,4 @@ class TeacherAttendance<T = {[data: string]: any}> extends React.Component<Teach
   }
 }
 export default withApollo(TeacherAttendance)
-//   export default graphql(CREATE_STU_CACHE, {
-//     options: ({ }) => ({
-//       variables: {
-//         branchId: 1851,
-//         academicYearId: 1701,
-//         lectureDate: moment(new Date()).format("DD-MM-YYYY"),
-//         teacherId: 2151
-//       }
-//     })
-//   }) (withLoadingHandler(
-  
-//     compose(
-//       graphql(GET_DAILY_ATTEN, { name: "getStudentAttendanceDataForAdmin" }),
-//       graphql(GET_STU_DATA, { name: "updateStudentAttendanceData" }),
-//     )
-//     (TeacherAttendance) as any
-//   )
-// );
+

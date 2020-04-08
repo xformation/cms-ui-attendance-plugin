@@ -10,8 +10,12 @@ import wsCmsBackendServiceSingletonClient from '../../../wsCmsBackendServiceClie
 
 export interface AttendanceProps extends React.HTMLAttributes<HTMLElement>{
     [data: string]: any;
-    user?: any,
+    user?: any;
     permissions?: any;
+    branchId?: null;
+    academicYearId?: null;
+    departmentId?: null;
+    teacherId?: null;
 }
 
 class Attendance extends React.Component<AttendanceProps, any> {
@@ -20,14 +24,15 @@ class Attendance extends React.Component<AttendanceProps, any> {
         super(props);
         this.state = {
             permissions: this.props.permissions,
-            activeTab: 0,
+            activeTab: -1,
             user: this.props.user,
             attendanceCacheForTeacher: null,
             attendanceCacheForAdmin: null,
-            branchId: null,
-            academicYearId: null,
-            departmentId: null,
-            teacherId: null,
+            branchId: this.props.branchId,
+            academicYearId: this.props.academicYearId,
+            departmentId: this.props.departmentId,
+            teacherId: this.props.teacherId,
+            isLoading: false,
         };
         this.toggleTab = this.toggleTab.bind(this);
         this.registerSocket = this.registerSocket.bind(this);
@@ -37,13 +42,13 @@ class Attendance extends React.Component<AttendanceProps, any> {
 
     async componentDidMount(){
         await this.registerSocket();
-        await this.getAttendanceCacheForTeacher();
+        // await this.getAttendanceCacheForTeacher();
         await this.getAttendanceCacheForAdmin();
     }
 
-    registerSocket() {
+    async registerSocket() {
         const socket = wsCmsBackendServiceSingletonClient.getInstance();
-
+        
         socket.onmessage = (response: any) => {
             let message = JSON.parse(response.data);
             console.log("Attendance index. message received from server ::: ", message);
@@ -55,10 +60,12 @@ class Attendance extends React.Component<AttendanceProps, any> {
             });
             console.log("Attendance index. branchId: ",this.state.branchId);
             console.log("Attendance index. departmentId: ",this.state.departmentId);
-            console.log("Attendance index. ayId: ",this.state.academicYearId);  
+            console.log("Attendance index. ayId: ",this.state.academicYearId);
+            console.log("Attendance index. teacherId: ",this.state.teacherId);  
+            
         }
     
-        socket.onopen = () => {
+        socket.onopen = () =>  {
            console.log("Attendance index. Opening websocekt connection on index.tsx. User : ",new URLSearchParams(location.search).get("signedInUser"));
            socket.send(new URLSearchParams(location.search).get("signedInUser"));
         }
@@ -66,6 +73,7 @@ class Attendance extends React.Component<AttendanceProps, any> {
         window.onbeforeunload = () => {
             console.log("Attendance index. Closing websocekt connection on index.tsx");
         }
+        
     }
 
     async toggleTab(tabNo: any) {
@@ -74,24 +82,31 @@ class Attendance extends React.Component<AttendanceProps, any> {
         });
 
         if(tabNo === 0){
-            this.getAttendanceCacheForTeacher();
+            if(!this.state.branchId){
+                console.log("Getting branch, academic year and department from server");
+                await this.registerSocket();
+            }
+            console.log("branch id -->>>> ",this.state.branchId);
+            await this.getAttendanceCacheForTeacher();
+            this.setState({
+                isLoading: true
+            })
         }
 
         if(tabNo === 1){
-            this.getAttendanceCacheForAdmin();
+            await this.getAttendanceCacheForAdmin();
         }
 
     }
 
     async getAttendanceCacheForTeacher() {
-        const {branchId, academicYearId, teacherId} = this.state;
         const {data} = await this.props.client.query({
           query: TEACHER_ATTENDANCE_CACHE,
             variables: {
-                branchId: branchId,
-                academicYearId: academicYearId,
+                branchId: this.state.branchId,
+                academicYearId: this.state.academicYearId,
                 lectureDate: moment(new Date()).format("DD-MM-YYYY"),
-                teacherId: teacherId
+                teacherId: this.LOGGED_IN_USER
             },
           
           fetchPolicy: 'no-cache',
@@ -119,7 +134,7 @@ class Attendance extends React.Component<AttendanceProps, any> {
     }
 
     render() {
-        const { activeTab, permissions, attendanceCacheForTeacher, attendanceCacheForAdmin } = this.state;
+        const { isLoading, activeTab, permissions, attendanceCacheForTeacher, attendanceCacheForAdmin } = this.state;
         return (
             <section className="tab-container row vertical-tab-container">
                 <Nav tabs className="pl-3 pl-3 mb-4 mt-4 col-sm-2">
@@ -157,10 +172,11 @@ class Attendance extends React.Component<AttendanceProps, any> {
                         : null
                     }
                 </Nav>
+                
                 <TabContent activeTab={activeTab} className="col-sm-9 border-left p-t-1">
                     
                     {
-                        this.LOGGED_IN_USER !== 'admin' && permissions["Teacher Attendance"] === "Teacher Attendance" ?
+                        activeTab === 0 && this.LOGGED_IN_USER !== 'admin' && permissions["Teacher Attendance"] === "Teacher Attendance" ?
                             <TabPane tabId={0}>
                                 {
                                     attendanceCacheForTeacher !== null && (
@@ -181,13 +197,14 @@ class Attendance extends React.Component<AttendanceProps, any> {
                     
                     {
                         this.LOGGED_IN_USER !== 'admin' && permissions["Admin Attendance"] === "Admin Attendance" ?
-                            <TabPane tabId={1}>
-                                {
-                                    attendanceCacheForAdmin !== null && (
-                                        <MarkAttendance attendanceCacheForAdmin={attendanceCacheForAdmin.createStudentAttendanceCacheForAdmin}></MarkAttendance>
-                                    )
-                                }
-                            </TabPane>
+                            isLoading &&  
+                            (<TabPane tabId={1}>
+                            {
+                                attendanceCacheForAdmin !== null && (
+                                    <MarkAttendance attendanceCacheForAdmin={attendanceCacheForAdmin.createStudentAttendanceCacheForAdmin}></MarkAttendance>
+                                )
+                            }
+                            </TabPane>)
                         : this.LOGGED_IN_USER === 'admin' ?
                             <TabPane tabId={1}>
                                 {

@@ -5,6 +5,7 @@ import Attendance from './Attendance';
 // import {FaUserGraduate} from 'react-icons/fa';
 import 'react-datepicker/dist/react-datepicker.css';
 import {config} from '../../config';
+import wsCmsBackendServiceSingletonClient from '../../wsCmsBackendServiceClient';
 
 export default class AttendancesTab extends React.Component<any, any> {
   LOGGED_IN_USER = new URLSearchParams(location.search).get('signedInUser');
@@ -13,9 +14,48 @@ export default class AttendancesTab extends React.Component<any, any> {
     this.state = {
       activeTab: 0,
       permissions: [],
+      branchId: null,
+      academicYearId: null,
+      departmentId: null,
+      teacherId: null,
+      isLoading: false,
     };
     this.toggleTab = this.toggleTab.bind(this);
     this.getUserPermissions = this.getUserPermissions.bind(this);
+    this.registerSocket = this.registerSocket.bind(this);
+  }
+
+  async registerSocket() {
+    
+    const socket = wsCmsBackendServiceSingletonClient.getInstance();
+    
+    socket.onmessage = async (response: any) => {
+        let message = JSON.parse(response.data);
+        console.log("Attendance TabPage. message received from server ::: ", message);
+        this.setState({
+            branchId: message.selectedBranchId,
+            academicYearId: message.selectedAcademicYearId,
+            departmentId: message.selectedDepartmentId,
+            teacherId: message.userId,
+        });
+        await console.log("Attendance TabPage. branchId: ",this.state.branchId);
+        console.log("Attendance TabPage. departmentId: ",this.state.departmentId);
+        console.log("Attendance TabPage. ayId: ",this.state.academicYearId);
+        console.log("Attendance TabPage. teacherId: ",this.state.teacherId);  
+        
+    }
+
+    socket.onopen = async () =>  {
+       console.log("Attendance TabPage. Opening websocekt connection on TabPage. User : ",new URLSearchParams(location.search).get("signedInUser"));
+       await socket.send(new URLSearchParams(location.search).get("signedInUser"));
+    }
+
+    window.onbeforeunload = () => {
+        console.log("Attendance index. Closing websocekt connection on TabPage.tsx");
+    }
+    
+    
+
   }
 
   toggleTab(tabNo: any) {
@@ -25,6 +65,7 @@ export default class AttendancesTab extends React.Component<any, any> {
   }
 
   async componentDidMount(){
+    await this.registerSocket();
     await this.getUserPermissions();
     console.log("Permissions : ",this.state.permissions);
   }
@@ -48,7 +89,7 @@ export default class AttendancesTab extends React.Component<any, any> {
   }
 
   render() {
-    const {activeTab, permissions} = this.state;
+    const {activeTab, permissions, academicYearId, branchId, departmentId, teacherId } = this.state;
     return (
       <section className="tab-container">
           <div >
@@ -81,21 +122,23 @@ export default class AttendancesTab extends React.Component<any, any> {
 
           </Nav>
           
-
-          <TabContent activeTab={activeTab} className="border-right">
-            {
-              this.LOGGED_IN_USER !== 'admin' && permissions["Attendance"] !== null && permissions["Attendance"] !== undefined ?
-                <TabPane tabId={0}>
-                  <Attendance permissions={permissions}/>
-                </TabPane>
-              : this.LOGGED_IN_USER === 'admin' ?
-                <TabPane tabId={0}>
-                  <Attendance permissions={permissions}/>
-                </TabPane>
-              : null
-            }
-            
-          </TabContent>
+          
+              <TabContent activeTab={activeTab} className="border-right">
+              {
+                (this.LOGGED_IN_USER !== 'admin' && permissions["Attendance"] !== null && permissions["Attendance"] !== undefined ?
+                  <TabPane tabId={0}>
+                    <Attendance permissions={permissions}/>
+                  </TabPane>
+                : this.LOGGED_IN_USER === 'admin' ?
+                  <TabPane tabId={0}>
+                    <Attendance permissions={permissions}/>
+                  </TabPane>
+                : null) 
+              }
+              
+            </TabContent>
+             
+          
       </section>
     );
   }
