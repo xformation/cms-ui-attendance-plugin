@@ -33,17 +33,19 @@ class Attendance extends React.Component<AttendanceProps, any> {
             departmentId: this.props.departmentId,
             teacherId: this.props.teacherId,
             isLoading: false,
+            isProcessStarted: false,
         };
         this.toggleTab = this.toggleTab.bind(this);
         this.registerSocket = this.registerSocket.bind(this);
         this.getAttendanceCacheForAdmin = this.getAttendanceCacheForAdmin.bind(this);
         this.getAttendanceCacheForTeacher = this.getAttendanceCacheForTeacher.bind(this);
+
     }
 
     async componentDidMount(){
         await this.registerSocket();
         // await this.getAttendanceCacheForTeacher();
-        await this.getAttendanceCacheForAdmin();
+        // await this.getAttendanceCacheForAdmin();
     }
 
     async registerSocket() {
@@ -77,13 +79,10 @@ class Attendance extends React.Component<AttendanceProps, any> {
     }
 
     async toggleTab(tabNo: any) {
-        this.setState({
-            activeTab: tabNo,
-        });
-
+        
         if(tabNo === 0){
             if(!this.state.branchId){
-                console.log("Getting branch, academic year and department from server");
+                console.log("1. Getting branch, academic year and department from server");
                 await this.registerSocket();
             }
             console.log("branch id -->>>> ",this.state.branchId);
@@ -94,9 +93,20 @@ class Attendance extends React.Component<AttendanceProps, any> {
         }
 
         if(tabNo === 1){
+            if(!this.state.branchId){
+                console.log("2. Getting branch, academic year and department from server");
+                alert("Please select branch from preferences");
+                return;
+            }
             await this.getAttendanceCacheForAdmin();
+            this.setState({
+                isLoading: true
+            })
         }
 
+        this.setState({
+            activeTab: tabNo,
+        });
     }
 
     async getAttendanceCacheForTeacher() {
@@ -177,21 +187,23 @@ class Attendance extends React.Component<AttendanceProps, any> {
                     
                     {
                         activeTab === 0 && this.LOGGED_IN_USER !== 'admin' && permissions["Teacher Attendance"] === "Teacher Attendance" ?
-                            <TabPane tabId={0}>
+                            isLoading && 
+                            (<TabPane tabId={0}>
                                 {
                                     attendanceCacheForTeacher !== null && (
                                         <TeacherAttendance attendanceCacheForTeacher={attendanceCacheForTeacher.createStudentAttendanceCache}></TeacherAttendance>
                                     )
                                 } 
-                            </TabPane>
+                            </TabPane>)
                         : this.LOGGED_IN_USER === 'admin' ?
-                            <TabPane tabId={0}>
+                            isLoading && 
+                            (<TabPane tabId={0}>
                                 {
                                     attendanceCacheForTeacher !== null && (
                                         <TeacherAttendance attendanceCacheForTeacher={attendanceCacheForTeacher.createStudentAttendanceCache}></TeacherAttendance>
                                     )
                                 } 
-                            </TabPane>
+                            </TabPane>)
                         : null
                     }
                     
@@ -206,13 +218,14 @@ class Attendance extends React.Component<AttendanceProps, any> {
                             }
                             </TabPane>)
                         : this.LOGGED_IN_USER === 'admin' ?
-                            <TabPane tabId={1}>
+                            isLoading && 
+                            (<TabPane tabId={1}>
                                 {
                                     attendanceCacheForAdmin !== null && (
                                         <MarkAttendance attendanceCacheForAdmin={attendanceCacheForAdmin.createStudentAttendanceCacheForAdmin}></MarkAttendance>
                                     )
                                 }
-                            </TabPane>
+                            </TabPane>)
                         : null
                     }
                     
