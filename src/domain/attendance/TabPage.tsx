@@ -2,7 +2,7 @@ import * as React from 'react';
 // import { graphql, QueryProps, MutationFunc, compose } from 'react-apollo';
 import {TabContent, TabPane, Nav, NavItem, NavLink} from 'reactstrap';
 import Attendance from './Attendance';
-// import {FaUserGraduate} from 'react-icons/fa';
+import {FaUserGraduate} from 'react-icons/fa';
 import 'react-datepicker/dist/react-datepicker.css';
 import {config} from '../../config';
 import wsCmsBackendServiceSingletonClient from '../../wsCmsBackendServiceClient';
@@ -95,10 +95,13 @@ export default class AttendancesTab extends React.Component<any, any> {
           <div >
             {/* <img src="../../img/students.png" alt="" /> */}
             {/* <h4 >Attendance</h4> */}
-            <h3 className="bg-heading p-1">
+            {/* <h3 className="bg-heading p-1">
               <i className="fa fa-university stroke-transparent mr-1" aria-hidden="true" />{' '}
               Mark Attendance
-            </h3>
+            </h3> */}
+            <div className="">
+              <h5><FaUserGraduate className="fa-2x" />Attendance</h5>
+            </div>
           </div>
           <Nav tabs className="pl-3 pl-3 mb-4 mt-4 boxShadow">
             {/* {

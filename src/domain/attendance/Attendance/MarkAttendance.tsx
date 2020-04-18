@@ -4,7 +4,7 @@ import * as React from 'react';
 import {withApollo} from 'react-apollo';
 import {GET_ATTENDANCE_DATA_FOR_ADMIN, UPDATE_STUDENT_ATTENDANCE_DATA} from '../_queries';
 import wsCmsBackendServiceSingletonClient from '../../../wsCmsBackendServiceClient';
-
+// import withLoadingHandler from '../withLoadingHandler';
 //import withStudentAtndDataLoader from "./withStudentAtndDataLoader";
 
 interface type {
@@ -94,6 +94,7 @@ export interface MarkAttendanceProps extends React.HTMLAttributes<HTMLElement>{
   academicYearId?: any;
   departmentId?: any;
   teacherId?: any;
+  // isLoading?: any;
 }
 class MarkAttendance extends React.Component<MarkAttendanceProps, StudentAttendanceState> {
   constructor(props: MarkAttendanceProps) {
@@ -196,7 +197,7 @@ class MarkAttendance extends React.Component<MarkAttendanceProps, StudentAttenda
     }
 
     socket.onopen = () => {
-        console.log("MarkAttendance. Opening websocekt connection. User : ",new URLSearchParams(location.search).get("signedInUser"));
+        console.log("MarkAttendance. Opening websocekt connection.   User : ",new URLSearchParams(location.search).get("signedInUser"));
         socket.send(new URLSearchParams(location.search).get("signedInUser"));
     }
 
@@ -809,10 +810,7 @@ class MarkAttendance extends React.Component<MarkAttendanceProps, StudentAttenda
 
     return (
       <section className="plugin-bg-white">
-        <h5 className="bg-heading p-1">
-          {/* <i className="fa fa-university stroke-transparent mr-1" aria-hidden="true" />{' '} */}
-          Admin Attendance
-        </h5>
+        {/* <h5 className="bg-heading p-1"> Admin Attendance </h5> */}
         <div className="p-1">
           <form className="gf-form-group" onSubmit={this.onFormSubmit}>
             <table id="t-attendance" className="markAttendance">
@@ -826,7 +824,7 @@ class MarkAttendance extends React.Component<MarkAttendanceProps, StudentAttenda
                   <th>Section</th>
                   <th>Lectures</th>
                   <th>Date</th>
-                  <th>Take Attendace</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -878,11 +876,11 @@ class MarkAttendance extends React.Component<MarkAttendanceProps, StudentAttenda
                   </td>
                   <td>
                     {/* <DatePickerComponent id="dtPicker" name="dtPicker" className="markDate" onChange={this.onClick}/> */}
-                    <DatePicker selected={this.state.startDate} value={this.state.startDate} onChange={this.changeDate} id="dtPicker" name="dtPicker" />
+                    <DatePicker className='fwidth' selected={this.state.startDate} value={this.state.startDate} onChange={this.changeDate} id="dtPicker" name="dtPicker" />
                   </td>
                   <td>
                     <button className="btn btn-primary" type="submit" id="btnTakeAtnd" name="btnTakeAtnd" style={{width: '130px'}} >
-                      Take Attendance
+                      Find Students
                     </button>
                   </td>
                 </tr>
@@ -908,7 +906,7 @@ class MarkAttendance extends React.Component<MarkAttendanceProps, StudentAttenda
             </div> */}
 
             <div className="hide" id="detailGridTable">
-              <table className="fwidth" id="matable">
+              <table className="fwidth m-t-1" id="matable">
                 <thead>
                   <tr>
                     <th>Student Id</th>
@@ -951,7 +949,7 @@ class MarkAttendance extends React.Component<MarkAttendanceProps, StudentAttenda
 //   (MarkAttendance) as any
 // );
 
-export default withApollo(MarkAttendance)
+export default withApollo(MarkAttendance) 
 
 // export default graphql(CRET_STU_ATD_CAC_ADM, {
 //   options: ({}) => ({

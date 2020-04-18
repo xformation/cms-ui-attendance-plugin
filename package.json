@@ -47,6 +47,7 @@
     "react-bootstrap-date-picker": "^5.1.0",
     "react-datepicker": "^1.8.0",
     "react-dom": "^16.2.0",
+    "react-icons": "^3.9.0",
     "react-router-dom": "^4.1.1",
     "reactstrap": "^8.1.1",
     "slate": "^0.33.7",

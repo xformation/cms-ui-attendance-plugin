@@ -7,6 +7,7 @@ import TeacherAttendance from './TeacherAttendance';
 import MarkAttendance from './MarkAttendance';
 import { TEACHER_ATTENDANCE_CACHE, ADMIN_ATTENDANCE_CACHE } from '../_queries';
 import wsCmsBackendServiceSingletonClient from '../../../wsCmsBackendServiceClient';
+import LoadingHandler from '../withLoadingHandler';
 
 export interface AttendanceProps extends React.HTMLAttributes<HTMLElement>{
     [data: string]: any;
@@ -81,6 +82,10 @@ class Attendance extends React.Component<AttendanceProps, any> {
     async toggleTab(tabNo: any) {
         
         if(tabNo === 0){
+            this.setState({
+                activeTab: tabNo,
+                isLoading: false
+            });
             if(!this.state.branchId){
                 console.log("1. Getting branch, academic year and department from server");
                 await this.registerSocket();
@@ -98,6 +103,10 @@ class Attendance extends React.Component<AttendanceProps, any> {
                 alert("Please select branch from preferences");
                 return;
             }
+            this.setState({
+                activeTab: tabNo,
+                isLoading: false
+            });
             await this.getAttendanceCacheForAdmin();
             this.setState({
                 isLoading: true
@@ -187,7 +196,7 @@ class Attendance extends React.Component<AttendanceProps, any> {
                     
                     {
                         activeTab === 0 && this.LOGGED_IN_USER !== 'admin' && permissions["Teacher Attendance"] === "Teacher Attendance" ?
-                            isLoading && 
+                            isLoading ? 
                             (<TabPane tabId={0}>
                                 {
                                     attendanceCacheForTeacher !== null && (
@@ -195,8 +204,9 @@ class Attendance extends React.Component<AttendanceProps, any> {
                                     )
                                 } 
                             </TabPane>)
+                            : activeTab === 0 ? <LoadingHandler/> : null
                         : this.LOGGED_IN_USER === 'admin' ?
-                            isLoading && 
+                            isLoading ? 
                             (<TabPane tabId={0}>
                                 {
                                     attendanceCacheForTeacher !== null && (
@@ -204,12 +214,13 @@ class Attendance extends React.Component<AttendanceProps, any> {
                                     )
                                 } 
                             </TabPane>)
+                            : activeTab === 0 ? <LoadingHandler/> : null
                         : null
                     }
                     
                     {
                         this.LOGGED_IN_USER !== 'admin' && permissions["Admin Attendance"] === "Admin Attendance" ?
-                            isLoading &&  
+                            isLoading ?  
                             (<TabPane tabId={1}>
                             {
                                 attendanceCacheForAdmin !== null && (
@@ -217,8 +228,9 @@ class Attendance extends React.Component<AttendanceProps, any> {
                                 )
                             }
                             </TabPane>)
+                            : activeTab === 1 ? <LoadingHandler/> : null
                         : this.LOGGED_IN_USER === 'admin' ?
-                            isLoading && 
+                            isLoading ? 
                             (<TabPane tabId={1}>
                                 {
                                     attendanceCacheForAdmin !== null && (
@@ -226,6 +238,7 @@ class Attendance extends React.Component<AttendanceProps, any> {
                                     )
                                 }
                             </TabPane>)
+                            : activeTab === 1 ? <LoadingHandler/> : null
                         : null
                     }
                     

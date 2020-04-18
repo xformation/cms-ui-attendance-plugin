@@ -546,10 +546,7 @@ class TeacherAttendance extends React.Component<TeacherAttendanceProps, StudentA
     const { studentFilterData, attendanceCacheForTeacher, departmentId, departments, batches, subjects, sections, lectures, teaches, attendanceMasters, submitted } = this.state;
     return (
       <section className="plugin-bg-white">
-        <h5 className="bg-heading p-1">
-          {/* <i className="fa fa-university stroke-transparent mr-1" aria-hidden="true" />{' '} */}
-          Teacher Attendance
-        </h5>
+        {/* <h5 className="bg-heading p-1">Teacher Attendance</h5> */}
         <div className="p-1">
           <form className="gf-form-group" onSubmit={this.onFormSubmit}>
             <table id="t-attendance">
@@ -562,7 +559,7 @@ class TeacherAttendance extends React.Component<TeacherAttendanceProps, StudentA
                   <th>Section</th>
                   <th>Lectures</th>
                   <th>Date</th>
-                  <th>Take Attendace</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -615,10 +612,10 @@ class TeacherAttendance extends React.Component<TeacherAttendanceProps, StudentA
                     </select>
                   </td>
                   <td>
-                    <input type="text" value={moment(new Date()).format("DD-MM-YYYY")} disabled ></input>
+                    <input type="text" style={{width:'78px'}} value={moment(new Date()).format("DD-MM-YYYY")} disabled ></input>
                   </td>
                   <td>
-                    <button className="btn btn-primary" type="submit" id="btnTakeAtnd" name="btnTakeAtnd" style={{ width: '130px' }} >Take Attendance</button>
+                    <button className="btn btn-primary" type="submit" id="btnTakeAtnd" name="btnTakeAtnd" style={{ width: '130px' }} >Find Students</button>
 
                   </td>
                 </tr>
