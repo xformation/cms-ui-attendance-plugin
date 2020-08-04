@@ -1,5 +1,5 @@
-const IP = '100.81.5.25';
-const graphqlUrl = 'http://' + IP + ':8080';
+const IP = 'localhost';
+const graphqlUrl = 'http://' + IP + ':9099';
 const loggedInUserUrl = 'http://' + IP + ':3000';
 const webSockWithCmsBackendUrl = 'ws://' + IP + ':4000/websocket/tracker/websocket';
 const backEndUrl = 'http://' + IP + ':8080';

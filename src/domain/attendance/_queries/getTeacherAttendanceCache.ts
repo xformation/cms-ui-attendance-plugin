@@ -17,10 +17,6 @@ export const TEACHER_ATTENDANCE_CACHE = gql`
         id
         name
         description
-        academicyear {
-          id
-          year
-        }
       }
       batches {
         id
@@ -47,10 +43,6 @@ export const TEACHER_ATTENDANCE_CACHE = gql`
         batch {
           id
         }
-      }
-      semesters {
-        id
-        description
       }
       teaches {
         id
